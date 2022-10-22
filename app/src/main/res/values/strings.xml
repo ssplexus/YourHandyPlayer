@@ -1,0 +1,40 @@
+<resources>
+    <string name="app_name">Your Handy Player</string>
+
+    <string name="page_title">Search it!</string>
+    <string name="disclaimer">Posters provided by https://www.movieposters.com</string>
+    <string name="btn_menu">Menu</string>
+    <string name="btn_home">Home</string>
+    <string name="btn_fav">Favorites</string>
+    <string name="btn_later">Watch later</string>
+    <string name="btn_compile">Selections</string>
+    <string name="btn_settings">Settings</string>
+
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+
+    <string name="is_exit">Are you want to exit?</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
+    <string name="cancel">Cancel</string>
+    <string name="ok">Ok</string>
+    <string name="parcel_item_film">film</string>
+    <string name="is_empty_list">Your list is empty</string>
+    <string name="poster_small">w342</string>
+    <string name="poster_normal">w500</string>
+    <string name="poster_big">w780</string>
+
+    <string name="menu_settings_title_text">Настройки</string>
+    <string name="radio_button_popular">Популярные</string>
+    <string name="radio_button_top_rated">Топ</string>
+    <string name="radio_button_upcoming">Скоро</string>
+    <string name="radio_button_playing">В кинотеатрах</string>
+    <string name="radio_group_header">Подборка на главном экране:</string>
+
+    <string name="watch_later">Не забудьте посмотреть!</string>
+
+    <string name="permission_storage">Нет разрешения. Пожалуйста, предоставьте разрешение</string>
+    <string name="downloaded_to_gallery">"Сохранено в галерею"</string>
+    <string name="open">В галерею</string>
+
+    <string name="db_name">film_db</string>
+</resources>

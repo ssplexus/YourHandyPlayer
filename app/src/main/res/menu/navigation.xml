@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <!--
+    <item
+        android:id="@+id/home"
+        android:icon="@drawable/ic_baseline_home_24"
+        android:title="@string/btn_home"/>
+    <item
+        android:id="@+id/favorites"
+        android:icon="@drawable/ic_baseline_favorite_24"
+        android:title="@string/btn_fav"
+        app:showAsAction="withText"/>
+    <item
+        android:id="@+id/watch_later"
+        android:icon="@drawable/ic_round_watch_later_24"
+        android:title="@string/btn_later"
+        app:showAsAction="withText"/>
+    <item
+        android:id="@+id/selections"
+        android:icon="@drawable/ic_baseline_video_library_24"
+        android:title="@string/btn_compile"
+        app:showAsAction="withText"/>
+    <item
+        android:id="@+id/settings"
+        android:icon="@drawable/ic_round_settings_24"
+        android:title="@string/menu_settings_title_text"
+        app:showAsAction="withText"/>
+        -->
+
+</menu>

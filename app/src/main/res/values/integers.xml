@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <integer name="ang45">45</integer>
+    <integer name="ang55">55</integer>
+    <integer name="ang90">90</integer>
+    <integer name="rating_donut_view_normal_stroke">10</integer>
+    <integer name="http_client_timeout">30</integer>
+
+</resources>

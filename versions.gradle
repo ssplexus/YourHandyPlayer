@@ -1,0 +1,6 @@
+ext {
+    kotlinVersion = "1.4.20"
+    daggerVersion = '2.32'
+    dagger = "com.google.dagger:dagger:$daggerVersion"
+    daggerCompiler = "com.google.dagger:dagger-compiler:$daggerVersion"
+}

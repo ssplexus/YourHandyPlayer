@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+
+    <!--Normal-->
+
+    <!--{Promo-->
+    <dimen name="promo_normal_margin">15dp</dimen>
+    <dimen name="promo_normal_margin_top">36dp</dimen>
+    <dimen name="promo_normal_padding">15dp</dimen>
+    <!--}Promo-->
+
+    <!--{RatingDonutView-->
+    <dimen name="rating_donut_view_normal_width">50dp</dimen>
+    <dimen name="rating_donut_view_normal_height">50dp</dimen>
+    <dimen name="rating_donut_view_normal_translationZ">11dp</dimen>
+    <!--}RatingDonutView-->
+
+    <!--{ Fragment home-->
+    <dimen name="fragment_home_collapsing_tbar_min_height">60dp</dimen>
+    <dimen name="fragment_home_search_view_layout_margin">8dp</dimen>
+    <dimen name="fragment_home_progressbar_layout_dimen">100dp</dimen>
+    <!--} Fragment home-->
+
+    <!--{ track item view-->
+    <dimen name="track_item_iview_normal_width">150dp</dimen>
+    <dimen name="track_item_tview_normal_width">0dp</dimen>
+    <dimen name="track_item_tview_normal_height">0dp</dimen>
+    <dimen name="track_item_tview_normal_pad">8dp</dimen>
+    <dimen name="track_item_tview_normal_margin">10dp</dimen>
+    <!-- } track item view-->
+
+    <dimen name="cardv_normal_height">150dp</dimen>
+    <dimen name="cardv_normal_corn_rad">15dp</dimen>
+    <dimen name="cardv_normal_margin">5dp</dimen>
+    <dimen name="cardv_normal_elevation">30dp</dimen>
+
+    <dimen name="mtbar_normal_height">75dp</dimen>
+
+    <dimen name="tview_normal_margin_top">16dp</dimen>
+    <dimen name="tview_normal_min_height">24dp</dimen>
+
+    <dimen name="act_detail_appbar_normal_height">200dp</dimen>
+    <dimen name="act_detail_appbar_collapsing_tb_normal_minHeight">60dp</dimen>
+    <dimen name="act_detail_TextView_normal_layout_margin">8dp</dimen>
+
+
+</resources>
