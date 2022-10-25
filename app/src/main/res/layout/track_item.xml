@@ -9,16 +9,13 @@
             type="Integer" />
     </data>
 
-    <FrameLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content">
-
         <androidx.cardview.widget.CardView
             android:id="@+id/item_container"
             android:layout_width="match_parent"
             android:layout_height="@dimen/cardv_normal_height"
             android:layout_margin="@dimen/cardv_normal_margin"
-            android:elevation="@dimen/cardv_normal_elevation"
+            app:cardElevation="5dp"
+
             app:cardCornerRadius="@dimen/cardv_normal_corn_rad">
 
             <androidx.constraintlayout.widget.ConstraintLayout
@@ -44,8 +41,8 @@
                     app:layout_constraintLeft_toRightOf="@+id/poster"
                     app:layout_constraintRight_toRightOf="parent"
                     app:layout_constraintTop_toTopOf="parent"
-                    android:background="@color/card_bg_color"
-                    android:textColor="@color/card_text_color"
+                    android:background="@color/blue_200"
+                    android:textColor="@color/white"
                     tools:text="Title" />
 
                 <TextView
@@ -63,5 +60,4 @@
             </androidx.constraintlayout.widget.ConstraintLayout>
         </androidx.cardview.widget.CardView>
 
-    </FrameLayout>
 </layout>
