@@ -10,6 +10,7 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.schedulers.Schedulers
@@ -30,12 +31,6 @@ class PListFragment : Fragment() {
     private lateinit var binding: FragmentPListBinding
     private lateinit var tracksAdapter: TrackListRecyclerAdapter
 
-    private val autoDisposable = AutoDisposable()
-
-    private val viewModel by lazy {
-        ViewModelProvider.NewInstanceFactory().create(PListFragmentViewModel::class.java)
-    }
-
     private var tracksDataBase = listOf<JamendoTrackData>()
         //Используем backing field
         set(value) {
@@ -44,6 +39,11 @@ class PListFragment : Fragment() {
             //Обновляем RV адаптер
             tracksAdapter.addItems(field)
         }
+    private val autoDisposable = AutoDisposable()
+
+    private val viewModel by lazy {
+        ViewModelProvider.NewInstanceFactory().create(PListFragmentViewModel::class.java)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -71,22 +71,13 @@ class PListFragment : Fragment() {
 
     private fun initRecycler(){
         //находим наш RV
+
         binding.mainRecycler.apply {
 
-            tracksAdapter = TrackListRecyclerAdapter(object : TrackListRecyclerAdapter.OnItemClickListener{
+             tracksAdapter = TrackListRecyclerAdapter(object : TrackListRecyclerAdapter.OnItemClickListener{
                 override fun click(track: JamendoTrackData) {
 
                     (requireActivity() as MainActivity).setTrack(track)
-//                    main_binding.trackTitle.text = track.name
-////                    main_binding.artAvatar.setImageURI(track.image)
-//                    //Указываем контейнер, в котором будет "жить" наша картинка
-//                    Glide.with(main_binding.bottomNavigation)
-//                        //Загружаем сам ресурс
-//                        .load(track.image)
-////            //Центруем изображение
-//                        .centerCrop()
-////            //Указываем ImageView, куда будем загружать изображение
-//                        .into(main_binding.artAvatar)
                 }
             })
             //Присваиваем адаптер
@@ -109,5 +100,16 @@ class PListFragment : Fragment() {
         }
     }
 
+    override fun onStop() {
+        super.onStop()
+        (requireActivity() as MainActivity).bottomNavigationShow(false)
+    }
 
+    override fun onResume() {
+        super.onResume()
+        (requireActivity() as MainActivity).let {
+            if(it.isPlaying()) it.bottomNavigationShow(true)
+        }
+
+    }
 }
