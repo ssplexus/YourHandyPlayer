@@ -2,7 +2,7 @@ package ru.ssnexus.mymoviesearcher.view.rv_viewholders
 
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
-import ru.ssnexus.database_module.data.entity.Track
+import ru.ssnexus.database_module.data.entity.JamendoTrackData
 import ru.ssnexus.yourhandyplayer.databinding.TrackItemBinding
 import ru.ssnexus.yourhandyplayer.di.modules.remote_module.entity.jamendo.JamendoTrack
 
@@ -12,7 +12,7 @@ class TrackViewHolder(val binding: TrackItemBinding) : RecyclerView.ViewHolder(b
     private val poster = binding.poster
     private val description = binding.description
 
-    fun bind(track: JamendoTrack) {
+    fun bind(track: JamendoTrackData) {
         //Устанавливаем заголовок
         title.text = track.name
 
@@ -26,7 +26,7 @@ class TrackViewHolder(val binding: TrackItemBinding) : RecyclerView.ViewHolder(b
             .into(poster)
 
         //Устанавливаем описание
-        description.text = track.album_name
+        description.text = track.album_name + "\n" + track.genres
 
     }
 }

@@ -5,21 +5,21 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import io.reactivex.rxjava3.core.Observable
-import ru.ssnexus.database_module.data.entity.Track
+import ru.ssnexus.database_module.data.entity.JamendoTrackData
 
 //Помечаем, что это не просто интерфейс, а Dao-объект
 @Dao
 interface TrackDao {
     //Запрос на всю таблицу
     @Query("SELECT * FROM tracks")
-    fun getTracks(): Observable<List<Track>>
+    fun getCachedTracksObservable(): Observable<List<JamendoTrackData>>
 
     //Кладём списком в БД, в случае конфликта перезаписываем
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insertAll(list: List<Track>)
+    fun insertAll(list: List<JamendoTrackData>)
 
     @Query("SELECT * FROM tracks")
-    fun getData(): List<Track>
+    fun getCachedTracks(): List<JamendoTrackData>
 
     // Очистка таблицы
     @Query("DELETE FROM tracks")

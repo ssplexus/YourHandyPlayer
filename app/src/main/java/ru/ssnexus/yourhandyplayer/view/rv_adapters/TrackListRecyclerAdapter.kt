@@ -3,6 +3,7 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
 import androidx.recyclerview.widget.RecyclerView
+import ru.ssnexus.database_module.data.entity.JamendoTrackData
 
 import ru.ssnexus.mymoviesearcher.view.rv_viewholders.TrackViewHolder
 import ru.ssnexus.yourhandyplayer.R
@@ -12,13 +13,13 @@ import ru.ssnexus.yourhandyplayer.di.modules.remote_module.entity.jamendo.Jamend
 //в параметр передаем слушатель, чтобы мы потом могли обрабатывать нажатия из класса Activity
 class TrackListRecyclerAdapter(private val clickListener: OnItemClickListener) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     //Здесь у нас хранится список элементов для RV
-    private var items = mutableListOf<JamendoTrack>()
+    private var items = mutableListOf<JamendoTrackData>()
 
-    fun setItems(items: ArrayList<JamendoTrack>) {
-        this.items = items as MutableList<JamendoTrack>
+    fun setItems(items: ArrayList<JamendoTrackData>) {
+        this.items = items as MutableList<JamendoTrackData>
     }
 
-    fun getItems() : List<JamendoTrack>{
+    fun getItems() : List<JamendoTrackData>{
         return items
     }
 
@@ -59,9 +60,9 @@ class TrackListRecyclerAdapter(private val clickListener: OnItemClickListener) :
 
 
     //Метод для добавления объектов в наш список
-    fun addItems(list: List<JamendoTrack>) {
+    fun addItems(list: List<JamendoTrackData>) {
 
-        val newList = arrayListOf<JamendoTrack>()
+        val newList = arrayListOf<JamendoTrackData>()
         //newList.addAll(getItems() + list)
         newList.addAll(list)
         setItems(newList)
@@ -80,6 +81,6 @@ class TrackListRecyclerAdapter(private val clickListener: OnItemClickListener) :
 
     //Интерфейс для обработки кликов
     interface OnItemClickListener {
-        fun click(Track: JamendoTrack)
+        fun click(track: JamendoTrackData)
     }
 }

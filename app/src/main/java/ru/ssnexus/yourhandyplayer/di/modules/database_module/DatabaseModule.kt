@@ -26,6 +26,6 @@ class DatabaseModule {
     fun provideRepository(trackDao: TrackDao) = MainRepository(trackDao)
 
     companion object{
-        const val DB_NAME = "track_db"
+        const val DB_NAME = "tracks_db"
     }
 }
