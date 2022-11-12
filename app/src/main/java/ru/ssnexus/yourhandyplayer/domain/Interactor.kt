@@ -75,17 +75,21 @@ class Interactor(val repo: MainRepository, val retrofitService: JamendoApi, priv
 
 //    fun getDBSize(): Int = repo.getSize()
 //
-//    fun clearCache()
-//    {
-//        repo.clearCache()
-//    }
+    fun clearCache()
+    {
+        repo.clearCache()
+    }
 
 //    //Метод для сохранения настроек
 //    fun saveDefaultCategoryToPreferences(category: String) {
 //        preferences.saveDefaultCategory(category)
 //    }
-//    //Метод для получения настроек
-//    fun getDefaultCategoryFromPreferences() = preferences.getDefaultCategory()
+    //Метод для получения настроек
+    fun getDefaultTagsFromPreferences() = preferences.getDefaultTags()
+
+    fun saveTagsToPreferences(tags : String) {
+        preferences.saveTags(tags)
+    }
 
     //Получить время первого запуска
     fun getFirstLaunchTime() = preferences.getFirstLaunchTime()

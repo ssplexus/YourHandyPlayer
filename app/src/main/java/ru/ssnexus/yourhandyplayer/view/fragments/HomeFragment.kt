@@ -1,22 +1,34 @@
 package ru.ssnexus.yourhandyplayer.view.fragments
 
+import android.os.Build
 import android.os.Bundle
+import android.os.Handler
 import android.view.LayoutInflater
+import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
+import android.widget.SeekBar
+import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.schedulers.Schedulers
+import io.reactivex.rxjava3.subjects.BehaviorSubject
 import ru.ssnexus.database_module.data.entity.JamendoTrackData
 import ru.ssnexus.mymoviesearcher.view.rv_adapters.TopSpacingItemDecoration
 import ru.ssnexus.mymoviesearcher.view.rv_adapters.TrackListRecyclerAdapter
+import ru.ssnexus.yourhandyplayer.R
 import ru.ssnexus.yourhandyplayer.databinding.FragmentHomeBinding
 import ru.ssnexus.yourhandyplayer.utils.AutoDisposable
+import ru.ssnexus.yourhandyplayer.utils.addTo
 import ru.ssnexus.yourhandyplayer.view.MainActivity
 import ru.ssnexus.yourhandyplayer.viewmodel.HomeFragmentViewModel
 import timber.log.Timber
+
 
 class HomeFragment : Fragment() {
 
@@ -33,6 +45,11 @@ class HomeFragment : Fragment() {
         }
 
     private val autoDisposable = AutoDisposable()
+
+    var playIconState: BehaviorSubject<Boolean>? = null
+    var progress: BehaviorSubject<Int>? = null
+    var bufferingLevel: BehaviorSubject<Int>? = null
+    var duration: BehaviorSubject<Int>? = null
 
 
     private val viewModel by lazy {
@@ -58,9 +75,18 @@ class HomeFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         initRecycler()
+        initSeekBar()
         initButtons()
-      //  AnimationHelper.performFragmentCircularRevealAnimation(binding.homeFragmentRoot, requireActivity(), 1)
+    }
 
+    override fun onResume() {
+        super.onResume()
+        (requireActivity() as MainActivity).isHomeFragment(true)
+    }
+
+    override fun onStop() {
+        super.onStop()
+        (requireActivity() as MainActivity).isHomeFragment(true)
     }
 
     private fun initButtons(){
@@ -70,9 +96,94 @@ class HomeFragment : Fragment() {
         binding.playListBtn.setOnClickListener {
             (requireActivity() as MainActivity).launchFragment(PListFragment())
         }
+
+        binding.forwardButton.setOnClickListener {
+            (requireActivity() as MainActivity).handyMediaPlayer?.onNextTrack()
+            (requireActivity() as MainActivity).handyMediaPlayer?.getCurrTrackPos()
+                ?.let { it1 -> binding.mainRecycler.scrollToPosition(it1)
+                }
+        }
+        binding.backwardButton.setOnClickListener {
+            (requireActivity() as MainActivity).handyMediaPlayer?.onPrevTrack()
+            (requireActivity() as MainActivity).handyMediaPlayer?.getCurrTrackPos()
+                ?.let{it1 -> binding.mainRecycler.scrollToPosition(it1) }
+        }
+        binding.playButton.setOnClickListener {
+            (requireActivity() as MainActivity).handyMediaPlayer?.onPlay()
+        }
+
+        if ((requireActivity() as MainActivity).handyMediaPlayer != null) {
+            (requireActivity() as MainActivity).handyMediaPlayer!!.let {
+                playIconState = it.playIconState
+                playIconState!!
+                    .subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
+                    .subscribe{
+                        if (it) {
+                            binding.playButton.setIconResource(R.drawable.ic_baseline_pause_24)
+                        } else {
+                            binding.playButton.setIconResource(R.drawable.ic_baseline_play_arrow_24)
+
+                        }
+                    }.addTo(autoDisposable)
+            }
+        }
     }
 
+    private fun initSeekBar(){
 
+//        binding.seekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener{
+//            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+//                if (fromUser) {
+//                    (requireActivity() as MainActivity).handyMediaPlayer?.getMediaPlayer()
+//                        ?.seekTo(progress)
+//                    seekBar?.setProgress(progress)
+//                }
+//            }
+//
+//            override fun onStartTrackingTouch(p0: SeekBar?) {
+//
+//            }
+//
+//            override fun onStopTrackingTouch(p0: SeekBar?) {
+//                TODO("Not yet implemented")
+//            }
+//        })
+
+        if ((requireActivity() as MainActivity).handyMediaPlayer != null) {
+            (requireActivity() as MainActivity).handyMediaPlayer!!.let {
+                progress = it.progress
+                progress!!
+                    .subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
+                    .subscribe{
+                        Timber.d("Progress=" + it)
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                            binding.seekBar.setProgress(it, false)
+                        }
+                    }.addTo(autoDisposable)
+
+                bufferingLevel = it.bufferingLevel
+                bufferingLevel!!
+                    .subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
+                    .subscribe{
+                        Timber.d("BufferingLevel=" + it)
+
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                            binding.seekBar.secondaryProgress = it
+                        }
+                    }.addTo(autoDisposable)
+                duration = it.duration
+                duration!!
+                    .subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
+                    .subscribe{
+                        Timber.d("Duration=" + it)
+                        binding.seekBar.max = it
+                        binding.seekBar.secondaryProgress = 0
+                    }.addTo(autoDisposable)
+            }
+            //  AnimationHelper.performFragmentCircularRevealAnimation(binding.homeFragmentRoot, requireActivity(), 1)
+
+        }
+    }
 
     private fun initRecycler(){
         //находим наш RV
@@ -80,8 +191,15 @@ class HomeFragment : Fragment() {
 
             tracksAdapter = TrackListRecyclerAdapter(object : TrackListRecyclerAdapter.OnItemClickListener{
                 override fun click(track: JamendoTrackData) {
-
-                    (requireActivity() as MainActivity).setTrack(track)
+                }
+            })
+            tracksAdapter.registerAdapterDataObserver(object : RecyclerView.AdapterDataObserver(){
+                override fun onChanged() {
+                    super.onChanged()
+                    if ((requireActivity() as MainActivity).getMedialayer() != null) {
+                        var pos = (requireActivity() as MainActivity).getMedialayer()!!.getCurrTrackPos()
+                        if(pos >= 0) binding.mainRecycler.scrollToPosition(pos)
+                    }
                 }
             })
             //Присваиваем адаптер
@@ -93,6 +211,9 @@ class HomeFragment : Fragment() {
             val decorator = TopSpacingItemDecoration(8)
             addItemDecoration(decorator)
 
+            viewModel.tagsPropertyLifeData.observe(viewLifecycleOwner, Observer<String> {
+                binding.tagsTv.text = it
+            })
 
             viewModel.tracksData.subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
@@ -100,9 +221,6 @@ class HomeFragment : Fragment() {
                     Timber.d("Data!!!")
                     tracksDataBase = tracks_data
                 }
-
-            //  viewModel.getTracksFromApi()
         }
     }
-
 }

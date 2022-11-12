@@ -43,5 +43,10 @@
     <dimen name="act_detail_appbar_collapsing_tb_normal_minHeight">60dp</dimen>
     <dimen name="act_detail_TextView_normal_layout_margin">8dp</dimen>
 
+    <dimen name="seek_bar_thickness">2dp</dimen>
+    <dimen name="seek_bar_second_thickness">3dp</dimen>
+    <dimen name="seek_bar_thumb_size">15dp</dimen>
+
+
 
 </resources>

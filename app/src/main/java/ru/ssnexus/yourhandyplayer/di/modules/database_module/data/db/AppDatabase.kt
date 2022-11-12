@@ -7,5 +7,5 @@ import ru.ssnexus.database_module.data.entity.JamendoTrackData
 
 @Database(entities = [JamendoTrackData::class], version = 1, exportSchema = false)
 abstract class AppDatabase : RoomDatabase() {
-    abstract fun filmDao(): TrackDao
+    abstract fun trackDao(): TrackDao
 }

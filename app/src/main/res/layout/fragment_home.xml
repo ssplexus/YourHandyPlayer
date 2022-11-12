@@ -11,7 +11,6 @@
     tools:context=".view.fragments.HomeFragment"
     tools:visibility="visible">
 
-
     <com.google.android.material.button.MaterialButton
         android:id="@+id/play_button"
         style="@style/Widget.MaterialComponents.ExtendedFloatingActionButton"
@@ -20,9 +19,9 @@
         android:backgroundTint="@color/blue_100"
         android:translationZ="15dp"
         app:cornerRadius="85dp"
-        app:icon="@android:drawable/ic_media_play"
+        app:icon="@drawable/ic_baseline_pause_24"
         app:iconGravity="textStart"
-        app:iconPadding="-5dp"
+        app:iconPadding="0dp"
         app:iconSize="50dp"
         app:iconTint="@color/white"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -91,7 +90,7 @@
 
             <LinearLayout
                 android:id="@+id/horlayout"
-                android:layout_width="250dp"
+                android:layout_width="350dp"
                 android:layout_height="80dp"
                 android:orientation="horizontal"
                 android:weightSum="100"
@@ -102,7 +101,7 @@
                     android:id="@+id/tags_btn"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:layout_weight="20"
+                    android:layout_weight="15"
                     android:background="@drawable/left_shape"
                     android:clickable="true">
 
@@ -124,7 +123,7 @@
                     android:id="@+id/play_list_btn"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:layout_weight="80"
+                    android:layout_weight="85"
                     android:clickable="true"
                     android:background="@drawable/right_shape">
 
@@ -173,6 +172,22 @@
             android:gravity="bottom"
             android:orientation="vertical"
             >
+
+            <TextView
+                android:id="@+id/seek_bar_text"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+
+                />
+
+            <SeekBar
+                android:id="@+id/seek_bar"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:progressDrawable="@drawable/seek_bar"
+                android:thumb="@drawable/seek_thumb"
+                />
+
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/main_recycler"
                 android:layout_width="match_parent"

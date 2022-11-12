@@ -21,8 +21,4 @@ class PListFragmentViewModel : ViewModel() {
          tracksData = interactor.getTracksDataObservable()
 
     }
-
-    fun getTracksFromApi(){
-        interactor.getTracksByTagsFromApi()
-    }
 }

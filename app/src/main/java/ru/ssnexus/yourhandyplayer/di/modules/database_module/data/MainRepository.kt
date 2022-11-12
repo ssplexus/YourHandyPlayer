@@ -29,9 +29,9 @@ class MainRepository(private val trackDao: TrackDao) {
 //
 //    fun getSize() : Int = trackDao.getData().size
 //
-//    fun clearCache()
-//    {
-//        //Timber.d("ClearCache")
-//        trackDao.nukeTable()
-//    }
+    fun clearCache()
+    {
+        //Timber.d("ClearCache")
+        trackDao.nukeTable()
+    }
 }

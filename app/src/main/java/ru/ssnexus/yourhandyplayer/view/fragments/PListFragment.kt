@@ -69,6 +69,28 @@ class PListFragment : Fragment() {
         initRecycler()
     }
 
+    override fun onStop() {
+        super.onStop()
+        Timber.d("OnStop")
+        (requireActivity() as MainActivity).let {
+            it.bottomNavigationShow(false)
+            it.isHomeFragment(false)
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        Timber.d("OnResume")
+        (requireActivity() as MainActivity).let {
+            if (it.handyMediaPlayer != null) {
+                if (it.handyMediaPlayer!!.isPlaying() == true) it.bottomNavigationShow(true)
+//                it.handyMediaPlayer!!.getCurrentTrack()
+//                    ?.let { it1 -> it.setBottomNavigationTrack(it1) }
+            }
+            it.isHomeFragment(false)
+        }
+    }
+
     private fun initRecycler(){
         //находим наш RV
 
@@ -76,10 +98,24 @@ class PListFragment : Fragment() {
 
              tracksAdapter = TrackListRecyclerAdapter(object : TrackListRecyclerAdapter.OnItemClickListener{
                 override fun click(track: JamendoTrackData) {
-
-                    (requireActivity() as MainActivity).setTrack(track)
+                    (requireActivity() as MainActivity).let {
+                        it.handyMediaPlayer?.let { hp ->
+                            it.setBottomNavigationTrack(track)
+                            hp.setTrack(track)
+                        }
+                    }
                 }
             })
+            tracksAdapter.registerAdapterDataObserver(object : RecyclerView.AdapterDataObserver(){
+                override fun onChanged() {
+                    super.onChanged()
+                    if ((requireActivity() as MainActivity).getMedialayer() != null) {
+                        var pos = (requireActivity() as MainActivity).getMedialayer()!!.getCurrTrackPos()
+                        if(pos >= 0) binding.mainRecycler.scrollToPosition(pos)
+                    }
+                }
+            })
+
             //Присваиваем адаптер
             adapter = tracksAdapter
             //Присвоим layoutmanager
@@ -88,28 +124,13 @@ class PListFragment : Fragment() {
             val decorator = TopSpacingItemDecoration(8)
             addItemDecoration(decorator)
 
-
             viewModel.tracksData.subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe{tracks_data ->
                     Timber.d("Data!!!")
                     tracksDataBase = tracks_data
                 }
-
-          //  viewModel.getTracksFromApi()
         }
     }
 
-    override fun onStop() {
-        super.onStop()
-        (requireActivity() as MainActivity).bottomNavigationShow(false)
-    }
-
-    override fun onResume() {
-        super.onResume()
-        (requireActivity() as MainActivity).let {
-            if(it.isPlaying()) it.bottomNavigationShow(true)
-        }
-
-    }
 }
