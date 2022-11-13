@@ -89,18 +89,10 @@ class MainActivity : AppCompatActivity() {
         Timber.d("bottomNavigationShow")
         if(flag) {
             binding.bottomNavigation.visibility = View.VISIBLE
-            binding.bottomNavigation.layoutParams.height = TypedValue.applyDimension(
-                TypedValue.COMPLEX_UNIT_DIP,
-                150f,
-                resources.displayMetrics
-            ).toInt()
+            binding.bottomNavigation.layoutParams.height = resources.getDimension(R.dimen.toolbar_max_height).toInt()
         }else{
             binding.bottomNavigation.visibility = View.INVISIBLE
-            binding.bottomNavigation.layoutParams.height = TypedValue.applyDimension(
-                TypedValue.COMPLEX_UNIT_DIP,
-                1f,
-                resources.displayMetrics
-            ).toInt()
+            binding.bottomNavigation.layoutParams.height = resources.getDimension(R.dimen.toolbar_min_height).toInt()
         }
     }
 
@@ -155,9 +147,7 @@ class MainActivity : AppCompatActivity() {
 
         Timber.d("setBottomNavigationTrack")
         binding.bottomNavigation.visibility = View.VISIBLE
-        binding.bottomNavigation.layoutParams.height = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
-            150f,
-            resources.displayMetrics).toInt()
+        binding.bottomNavigation.layoutParams.height = resources.getDimension(R.dimen.toolbar_max_height).toInt()
         binding.trackTitle.text = track.name
 
         Glide.with(binding.bottomNavigation)
@@ -168,7 +158,6 @@ class MainActivity : AppCompatActivity() {
                         //Указываем ImageView, куда будем загружать изображение
                         .into(binding.artAvatar)
 
-//        handyMediaPlayer?.setTrack(track)
     }
 
     fun getMedialayer() = handyMediaPlayer

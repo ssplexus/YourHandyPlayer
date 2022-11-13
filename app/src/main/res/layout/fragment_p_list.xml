@@ -10,17 +10,17 @@
     tools:visibility="visible"
     tools:context=".view.fragments.PListFragment">
 
-    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
-        android:id="@+id/pull_to_refresh"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:padding="10dp"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+<!--    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout-->
+<!--        android:id="@+id/pull_to_refresh"-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="match_parent"-->
+<!--        android:padding="10dp"-->
+<!--        app:layout_behavior="@string/appbar_scrolling_view_behavior">-->
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/main_recycler"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
             android:layout_margin="8dp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintLeft_toLeftOf="parent"
@@ -28,7 +28,12 @@
             app:layout_constraintTop_toTopOf="parent"
             tools:listitem="@layout/track_item" />
 
-    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
-
+<!--    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>-->
+        <ProgressBar
+            android:id="@+id/progress_bar"
+            android:layout_width="@dimen/fragment_home_progressbar_layout_dimen"
+            android:layout_height="@dimen/fragment_home_progressbar_layout_dimen"
+            android:visibility="invisible"
+            android:layout_gravity="center"/>
 
 </FrameLayout>

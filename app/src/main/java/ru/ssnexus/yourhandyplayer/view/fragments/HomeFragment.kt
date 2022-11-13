@@ -10,6 +10,7 @@ import android.view.ViewGroup
 import android.widget.SeekBar
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
@@ -18,6 +19,7 @@ import androidx.recyclerview.widget.RecyclerView
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.schedulers.Schedulers
 import io.reactivex.rxjava3.subjects.BehaviorSubject
+import kotlinx.coroutines.*
 import ru.ssnexus.database_module.data.entity.JamendoTrackData
 import ru.ssnexus.mymoviesearcher.view.rv_adapters.TopSpacingItemDecoration
 import ru.ssnexus.mymoviesearcher.view.rv_adapters.TrackListRecyclerAdapter
@@ -32,6 +34,7 @@ import timber.log.Timber
 
 class HomeFragment : Fragment() {
 
+    private var bundle: Bundle? = null
     private lateinit var binding: FragmentHomeBinding
     private lateinit var tracksAdapter: TrackListRecyclerAdapter
 
@@ -59,6 +62,14 @@ class HomeFragment : Fragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         retainInstance = true
+        Timber.d("onCreate")
+//        if (savedInstanceState?.getInt(SEEK_PROGRESS) != null) {
+//            binding.seekBar.progress = savedInstanceState?.getInt(SEEK_PROGRESS)
+//            Timber.d("SeekProgress" + savedInstanceState?.getInt(SEEK_PROGRESS))
+//        }
+//        if (savedInstanceState?.getInt(SEEK_SECOND_PROGRESS) != null)
+//            binding.seekBar.secondaryProgress = savedInstanceState?.getInt(SEEK_SECOND_PROGRESS)
+
         autoDisposable.bindTo(lifecycle)
     }
 
@@ -66,6 +77,7 @@ class HomeFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
+        Timber.d("onCreateView")
         // Inflate the layout for this fragment
         binding = FragmentHomeBinding.inflate(inflater, container, false)
         return binding.root
@@ -73,20 +85,40 @@ class HomeFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
+        Timber.d("onViewCreated")
+        bundle = savedInstanceState
         initRecycler()
         initSeekBar()
         initButtons()
     }
 
+    override fun onSaveInstanceState(outState: Bundle) {
+
+        Timber.d("onSaveInstanceState")
+//        outState.putInt(SEEK_PROGRESS, binding.seekBar.progress)
+//        outState.putInt(SEEK_SECOND_PROGRESS, binding.seekBar.secondaryProgress)
+        super.onSaveInstanceState(outState)
+    }
+
     override fun onResume() {
         super.onResume()
+        Timber.d("onResume")
         (requireActivity() as MainActivity).isHomeFragment(true)
+
+//        if(bundle != null){
+//            binding.seekBar.progress = bundle?.getInt(SEEK_PROGRESS)!!
+//            binding.seekBar.secondaryProgress = bundle?.getInt(SEEK_SECOND_PROGRESS)!!
+//        }
     }
 
     override fun onStop() {
         super.onStop()
+        Timber.d("onStop")
         (requireActivity() as MainActivity).isHomeFragment(true)
+
+//        if(bundle == null) bundle = Bundle()
+//        bundle?.putInt(SEEK_PROGRESS, binding.seekBar.progress)
+//        bundle?.putInt(SEEK_SECOND_PROGRESS, binding.seekBar.secondaryProgress)
     }
 
     private fun initButtons(){
@@ -131,26 +163,28 @@ class HomeFragment : Fragment() {
 
     private fun initSeekBar(){
 
-//        binding.seekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener{
-//            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
-//                if (fromUser) {
-//                    (requireActivity() as MainActivity).handyMediaPlayer?.getMediaPlayer()
-//                        ?.seekTo(progress)
-//                    seekBar?.setProgress(progress)
-//                }
-//            }
-//
-//            override fun onStartTrackingTouch(p0: SeekBar?) {
-//
-//            }
-//
-//            override fun onStopTrackingTouch(p0: SeekBar?) {
-//                TODO("Not yet implemented")
-//            }
-//        })
-
         if ((requireActivity() as MainActivity).handyMediaPlayer != null) {
             (requireActivity() as MainActivity).handyMediaPlayer!!.let {
+                binding.seekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener{
+                    override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+                        if (fromUser) {
+                            it.getMediaPlayer()
+                                ?.seekTo(progress)
+                            seekBar?.setProgress(progress)
+                        }
+                    }
+
+                    override fun onStartTrackingTouch(seekBar: SeekBar?) {
+                        //seekBarHint.setVisibility(View.VISIBLE);
+                    }
+
+                    override fun onStopTrackingTouch(seekBar: SeekBar?) {
+                        if(it.isPlaying()) if (seekBar != null) {
+                            it.getMediaPlayer().seekTo(seekBar.progress)
+                        }
+                    }
+                })
+
                 progress = it.progress
                 progress!!
                     .subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
@@ -189,6 +223,9 @@ class HomeFragment : Fragment() {
         //находим наш RV
         binding.mainRecycler.apply {
 
+            setOnTouchListener { view, motionEvent ->
+                return@setOnTouchListener true
+            }
             tracksAdapter = TrackListRecyclerAdapter(object : TrackListRecyclerAdapter.OnItemClickListener{
                 override fun click(track: JamendoTrackData) {
                 }
@@ -218,9 +255,19 @@ class HomeFragment : Fragment() {
             viewModel.tracksData.subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe{tracks_data ->
-                    Timber.d("Data!!!")
+//                    Timber.d("Data!!!")
                     tracksDataBase = tracks_data
                 }
+            viewModel.showProgressBar
+                .subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
+                .subscribe{
+                    binding.progressBar.isVisible = it
+                }.addTo(autoDisposable)
         }
+    }
+
+    companion object{
+        private const val SEEK_PROGRESS = "SEEK_PROGRESS"
+        private const val SEEK_SECOND_PROGRESS = "SEEK_SECOND_PROGRESS"
     }
 }

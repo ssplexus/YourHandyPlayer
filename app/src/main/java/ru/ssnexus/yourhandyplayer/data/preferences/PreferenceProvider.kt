@@ -39,9 +39,9 @@ class PreferenceProvider(context: Context) {
 
     //Ключи для наших настроек, по ним мы их будем получать
     companion object {
-        private const val KEY_FIRST_LAUNCH = "first_launch"
-        private const val KEY_TAGS = "tags"
-        private const val DEFAULT_TAGS = "Choose your mood"
-        private const val KEY_FIRST_LAUNCH_TIME = "first_launch_time"
+        const val KEY_FIRST_LAUNCH = "first_launch"
+        const val KEY_TAGS = "tags"
+        const val DEFAULT_TAGS = "Choose your mood"
+        const val KEY_FIRST_LAUNCH_TIME = "first_launch_time"
     }
 }

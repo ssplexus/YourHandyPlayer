@@ -77,6 +77,14 @@ class HandyMediaPlayer (val interactor: Interactor) {
         else return -1
     }
 
+    fun getCurrTrackData() = currTrack
+
+    fun getTrackDataByPos(pos: Int): JamendoTrackData?{
+        if(trackList.isEmpty()) return null
+        if (pos < 0 || pos >= trackList.size) return null
+        return trackList.get(pos)
+    }
+
     fun isSetTrack() : Boolean = if(currTrack != null) true else false
 
     fun onPlay() {
@@ -143,6 +151,8 @@ class HandyMediaPlayer (val interactor: Interactor) {
             it.setAudioStreamType(AudioManager.STREAM_MUSIC)
             it.setOnPreparedListener{
                 Timber.d("OnPreparedListener")
+                progress.onNext(0)
+                bufferingLevel.onNext(0)
                 duration.onNext(it.duration)
                 updateSeekBar()
                 if (isOnPlaying) togglePlayPause()

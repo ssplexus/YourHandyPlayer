@@ -24,4 +24,7 @@ interface TrackDao {
     // Очистка таблицы
     @Query("DELETE FROM tracks")
     fun nukeTable()
+
+    @Query("SELECT COUNT(*) FROM tracks")
+    fun getSize(): Int
 }

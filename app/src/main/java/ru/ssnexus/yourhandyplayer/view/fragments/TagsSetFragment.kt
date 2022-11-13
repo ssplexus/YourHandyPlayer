@@ -42,6 +42,8 @@ class TagsSetFragment : Fragment() {
         ViewModelProvider.NewInstanceFactory().create(TagsSetViewModel::class.java)
     }
 
+    private var tagsProperty: String = ""
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         retainInstance = true
@@ -75,17 +77,17 @@ class TagsSetFragment : Fragment() {
         binding.soundtrackTag.setOnClickListener { setTags() }
 
         binding.acceptButton.setOnClickListener {
-            viewModel.saveTagsProperty(binding.tagsTv.text.toString())
+            viewModel.saveTagsProperty(tagsProperty)
             (requireActivity() as MainActivity).launchFragment(HomeFragment())
         }
 
         viewModel.tagsPropertyLifeData.observe(viewLifecycleOwner, Observer<String> {
-            binding.tagsTv.text = it
+            tagsProperty = it
         })
 
         viewModel.tagsPropertyLifeData.observe(viewLifecycleOwner, Observer<String> {
             it.split("+").forEach {tag ->
-                when(tag) {
+                when(tag.trim()) {
                     ROCK_TAG -> binding.rockTag.isChecked = true
                     POP_TAG -> binding.popTag.isChecked = true
                     RNB_TAG -> binding.rnbTag.isChecked = true
@@ -115,22 +117,23 @@ class TagsSetFragment : Fragment() {
 
     fun setTags(){
         var result = ""
-        if (binding.rockTag.isChecked) result += binding.rockTag.text.toString() + "+"
-        if (binding.popTag.isChecked) result += binding.popTag.text.toString() + "+"
-        if (binding.rnbTag.isChecked) result += binding.rnbTag.text.toString() + "+"
-        if (binding.hiphopTag.isChecked) result += binding.hiphopTag.text.toString() + "+"
-        if (binding.loungeTag.isChecked) result += binding.loungeTag.text.toString() + "+"
-        if (binding.electronicTag.isChecked) result += binding.electronicTag.text.toString() + "+"
-        if (binding.relaxationTag.isChecked) result += binding.relaxationTag.text.toString() + "+"
-        if (binding.metalTag.isChecked) result += binding.metalTag.text.toString() + "+"
-        if (binding.classicalTag.isChecked) result += binding.classicalTag.text.toString() + "+"
-        if (binding.jazzTag.isChecked) result += binding.jazzTag.text.toString() + "+"
-        if (binding.worldTag.isChecked) result += binding.worldTag.text.toString() + "+"
-        if (binding.soundtrackTag.isChecked) result += binding.soundtrackTag.text.toString() + "+"
+        val delim = " + "
+        if (binding.rockTag.isChecked) result += binding.rockTag.text.toString() + delim
+        if (binding.popTag.isChecked) result += binding.popTag.text.toString() + delim
+        if (binding.rnbTag.isChecked) result += binding.rnbTag.text.toString() + delim
+        if (binding.hiphopTag.isChecked) result += binding.hiphopTag.text.toString() + delim
+        if (binding.loungeTag.isChecked) result += binding.loungeTag.text.toString() + delim
+        if (binding.electronicTag.isChecked) result += binding.electronicTag.text.toString() + delim
+        if (binding.relaxationTag.isChecked) result += binding.relaxationTag.text.toString() + delim
+        if (binding.metalTag.isChecked) result += binding.metalTag.text.toString() + delim
+        if (binding.classicalTag.isChecked) result += binding.classicalTag.text.toString() + delim
+        if (binding.jazzTag.isChecked) result += binding.jazzTag.text.toString() + delim
+        if (binding.worldTag.isChecked) result += binding.worldTag.text.toString() + delim
+        if (binding.soundtrackTag.isChecked) result += binding.soundtrackTag.text.toString() + delim
         if (result.isEmpty()) result = "Select your tags"
-        else if (result.last() == '+') result = result.removeSuffix("+")
+        result = result.removeSuffix(delim)
 
-        binding.tagsTv.text = result
+        tagsProperty = result
     }
 
 

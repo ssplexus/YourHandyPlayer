@@ -14,62 +14,62 @@
     <com.google.android.material.button.MaterialButton
         android:id="@+id/play_button"
         style="@style/Widget.MaterialComponents.ExtendedFloatingActionButton"
-        android:layout_width="100dp"
-        android:layout_height="100dp"
+        android:layout_width="@dimen/homefrag_play_btn_layout_size"
+        android:layout_height="@dimen/homefrag_play_btn_layout_size"
         android:backgroundTint="@color/blue_100"
-        android:translationZ="15dp"
-        app:cornerRadius="85dp"
+        android:translationZ="@dimen/homefrag_play_btn_translationZ"
+        app:cornerRadius="@dimen/homefrag_play_btn_cornerRadius"
         app:icon="@drawable/ic_baseline_pause_24"
         app:iconGravity="textStart"
         app:iconPadding="0dp"
-        app:iconSize="50dp"
+        app:iconSize="@dimen/homefrag_play_btn_iconSize"
         app:iconTint="@color/white"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:strokeColor="@color/white"
-        app:strokeWidth="5dp" />
+        app:strokeWidth="@dimen/homefrag_play_btn_strokeWidth" />
 
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/backward_button"
         style="@style/Widget.MaterialComponents.ExtendedFloatingActionButton"
-        android:layout_width="100dp"
-        android:layout_height="65dp"
+        android:layout_width="@dimen/homefrag_backward_btn_layout_width"
+        android:layout_height="@dimen/homefrag_backward_btn_layout_height"
         android:backgroundTint="@color/blue_100"
-        android:translationZ="15dp"
-        app:cornerRadius="30dp"
+        android:translationZ="@dimen/homefrag_backward_btn_translationZ"
+        app:cornerRadius="@dimen/homefrag_backward_btn_cornerRadius"
         app:icon="@android:drawable/ic_media_previous"
         app:iconGravity="textStart"
-        app:iconSize="50dp"
+        app:iconSize="@dimen/homefrag_backward_btn_iconSize"
         app:iconTint="@color/white"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toLeftOf="@id/play_button"
         app:layout_constraintTop_toTopOf="parent"
         app:strokeColor="@color/white"
-        app:strokeWidth="5dp" />
+        app:strokeWidth="@dimen/homefrag_backward_strokeWidth" />
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/forward_button"
         style="@style/Widget.MaterialComponents.ExtendedFloatingActionButton"
-        android:layout_width="100dp"
-        android:layout_height="65dp"
+        android:layout_width="@dimen/homefrag_forward_btn_layout_width"
+        android:layout_height="@dimen/homefrag_forward_btn_layout_height"
         android:backgroundTint="@color/blue_100"
-        android:translationZ="15dp"
-        app:cornerRadius="30dp"
+        android:translationZ="@dimen/homefrag_forward_btn_translationZ"
+        app:cornerRadius="@dimen/homefrag_forward_btn_cornerRadius"
         app:icon="@android:drawable/ic_media_next"
         app:iconGravity="textStart"
-        app:iconPadding="-10dp"
-        app:iconSize="50dp"
+        app:iconPadding="@dimen/homefrag_forward_btn_iconPadding"
+        app:iconSize="@dimen/homefrag_forward_btn_iconSize"
         app:iconTint="@color/white"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toRightOf="@id/play_button"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:strokeColor="@color/white"
-        app:strokeWidth="5dp" />
+        app:strokeWidth="@dimen/homefrag_forward_strokeWidth" />
 
     <LinearLayout
         android:id="@+id/linearLayout"
@@ -137,31 +137,7 @@
 
                         />
                 </LinearLayout>
-
-
             </LinearLayout>
-            <!--
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/plist_tags_button"
-                android:layout_width="200dp"
-                android:layout_height="wrap_content"
-                android:background="@drawable/left_shape"
-                android:minHeight="80dp"
-                android:text="Choose your mood"
-                android:textColor="@color/white"
-                android:textStyle="bold"
-
-                app:shapeAppearanceOverlay="@drawable/left_shape" />
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/plist_tags_settings"
-                android:layout_width="50dp"
-                android:layout_height="wrap_content"
-                android:background="@drawable/right_shape"
-                android:minHeight="80dp"
-                app:shapeAppearanceOverlay="@drawable/right_shape"
-
-                />-->
         </LinearLayout>
 
         <LinearLayout
@@ -203,32 +179,14 @@
 
     </LinearLayout>
 
-
-    <!--
-        <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
-            android:id="@+id/pull_to_refresh"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            app:layout_behavior="@string/appbar_scrolling_view_behavior"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintLeft_toLeftOf="parent"
-            app:layout_constraintRight_toRightOf="parent"
-            app:layout_constraintTop_toBottomOf="parent">
-
-
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/main_recycler"
-                android:layout_width="0dp"
-                android:layout_height="0dp"
-                android:layout_margin="20dp"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintLeft_toLeftOf="parent"
-                app:layout_constraintRight_toRightOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/search_view"
-                tools:listitem="@layout/track_item" />
-
-        </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
-            -->
+    <ProgressBar
+        android:id="@+id/progress_bar"
+        android:layout_width="@dimen/fragment_home_progressbar_layout_dimen"
+        android:layout_height="@dimen/fragment_home_progressbar_layout_dimen"
+        android:visibility="invisible"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
 
