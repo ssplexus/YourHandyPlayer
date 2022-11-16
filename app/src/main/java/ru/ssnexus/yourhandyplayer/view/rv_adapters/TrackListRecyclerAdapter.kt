@@ -8,6 +8,7 @@ import ru.ssnexus.database_module.data.entity.JamendoTrackData
 import ru.ssnexus.mymoviesearcher.view.rv_viewholders.TrackViewHolder
 import ru.ssnexus.yourhandyplayer.R
 import ru.ssnexus.yourhandyplayer.di.modules.remote_module.entity.jamendo.JamendoTrack
+import timber.log.Timber
 
 
 //в параметр передаем слушатель, чтобы мы потом могли обрабатывать нажатия из класса Activity
@@ -61,12 +62,13 @@ class TrackListRecyclerAdapter(private val clickListener: OnItemClickListener) :
 
     //Метод для добавления объектов в наш список
     fun addItems(list: List<JamendoTrackData>) {
-
+        Timber.d("addItems")
         val newList = arrayListOf<JamendoTrackData>()
         //newList.addAll(getItems() + list)
         newList.addAll(list)
         setItems(newList)
         notifyDataSetChanged()
+
 //        val  diff = ItemDiffUtil(getItems(), newList)
 //        val difResult = DiffUtil.calculateDiff(diff)
 //        setItems(newList)

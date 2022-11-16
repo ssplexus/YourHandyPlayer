@@ -23,10 +23,13 @@
 
     <!--{ track item view-->
     <dimen name="track_item_iview_normal_width">150dp</dimen>
+    <dimen name="track_item_iview_normal_height">100dp</dimen>
     <dimen name="track_item_tview_normal_width">0dp</dimen>
     <dimen name="track_item_tview_normal_height">0dp</dimen>
-    <dimen name="track_item_tview_normal_pad">8dp</dimen>
+    <dimen name="track_item_tview_normal_pad">10dp</dimen>
     <dimen name="track_item_tview_normal_margin">10dp</dimen>
+
+    <dimen name="track_item_track_control_iview_normal_width">40dp</dimen>
     <!-- } track item view-->
 
     <dimen name="cardv_normal_height">150dp</dimen>
@@ -43,5 +46,42 @@
     <dimen name="act_detail_appbar_collapsing_tb_normal_minHeight">60dp</dimen>
     <dimen name="act_detail_TextView_normal_layout_margin">8dp</dimen>
 
+    <dimen name="seek_bar_thickness">3dp</dimen>
+    <dimen name="seek_bar_second_thickness">3dp</dimen>
+    <dimen name="seek_bar_thumb_size">15dp</dimen>
+
+    <dimen name="shape_selector_pressed">5dp</dimen>
+    <dimen name="shape_selector_released">2dp</dimen>
+    <dimen name="round_shape_radius">25dp</dimen>
+
+    <dimen name="toolbar_min_height">1dp</dimen>
+    <dimen name="toolbar_max_height">150dp</dimen>
+
+    <!--HomeFrag Play button {-->
+    <dimen name="homefrag_play_btn_layout_size">100dp</dimen>
+    <dimen name="homefrag_play_btn_translationZ">15dp</dimen>
+    <dimen name="homefrag_play_btn_cornerRadius">85dp</dimen>
+    <dimen name="homefrag_play_btn_iconSize">85dp</dimen>
+    <dimen name="homefrag_play_btn_strokeWidth">5dp</dimen>
+    <!--HomeFrag Play button }-->
+
+    <!--HomeFrag Backward button {-->
+    <dimen name="homefrag_backward_btn_layout_width">100dp</dimen>
+    <dimen name="homefrag_backward_btn_layout_height">65dp</dimen>
+    <dimen name="homefrag_backward_btn_cornerRadius">30dp</dimen>
+    <dimen name="homefrag_backward_btn_translationZ">15dp</dimen>
+    <dimen name="homefrag_backward_btn_iconSize">50dp</dimen>
+    <dimen name="homefrag_backward_strokeWidth">5dp</dimen>
+    <!--HomeFrag Backward button }-->
+
+    <!--HomeFrag forward button {-->
+    <dimen name="homefrag_forward_btn_layout_width">100dp</dimen>
+    <dimen name="homefrag_forward_btn_layout_height">65dp</dimen>
+    <dimen name="homefrag_forward_btn_cornerRadius">30dp</dimen>
+    <dimen name="homefrag_forward_btn_translationZ">15dp</dimen>
+    <dimen name="homefrag_forward_btn_iconSize">50dp</dimen>
+    <dimen name="homefrag_forward_btn_iconPadding">-10dp</dimen>
+    <dimen name="homefrag_forward_strokeWidth">5dp</dimen>
+    <!--HomeFrag forward button }-->
 
 </resources>

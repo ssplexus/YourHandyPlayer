@@ -14,12 +14,12 @@ class DatabaseModule {
 
     @Singleton
     @Provides
-    fun provideFilmDao(context: Context) =
+    fun provideTrackDao(context: Context) =
         Room.databaseBuilder(
             context,
             AppDatabase::class.java,
             DB_NAME
-        ).build().filmDao()
+        ).build().trackDao()
 
     @Provides
     @Singleton
