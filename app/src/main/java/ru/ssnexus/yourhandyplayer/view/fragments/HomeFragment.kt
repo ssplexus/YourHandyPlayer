@@ -2,14 +2,10 @@ package ru.ssnexus.yourhandyplayer.view.fragments
 
 import android.os.Build
 import android.os.Bundle
-import android.os.Handler
 import android.view.LayoutInflater
-import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.widget.SeekBar
-import android.widget.Toast
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
@@ -18,8 +14,6 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.schedulers.Schedulers
-import io.reactivex.rxjava3.subjects.BehaviorSubject
-import kotlinx.coroutines.*
 import ru.ssnexus.database_module.data.entity.JamendoTrackData
 import ru.ssnexus.mymoviesearcher.view.rv_adapters.TopSpacingItemDecoration
 import ru.ssnexus.mymoviesearcher.view.rv_adapters.TrackListRecyclerAdapter
@@ -49,12 +43,6 @@ class HomeFragment : Fragment() {
 
     private val autoDisposable = AutoDisposable()
 
-    var playIconState: BehaviorSubject<Boolean>? = null
-    var progress: BehaviorSubject<Int>? = null
-    var bufferingLevel: BehaviorSubject<Int>? = null
-    var duration: BehaviorSubject<Int>? = null
-
-
     private val viewModel by lazy {
         ViewModelProvider.NewInstanceFactory().create(HomeFragmentViewModel::class.java)
     }
@@ -62,14 +50,7 @@ class HomeFragment : Fragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         retainInstance = true
-        Timber.d("onCreate")
-//        if (savedInstanceState?.getInt(SEEK_PROGRESS) != null) {
-//            binding.seekBar.progress = savedInstanceState?.getInt(SEEK_PROGRESS)
-//            Timber.d("SeekProgress" + savedInstanceState?.getInt(SEEK_PROGRESS))
-//        }
-//        if (savedInstanceState?.getInt(SEEK_SECOND_PROGRESS) != null)
-//            binding.seekBar.secondaryProgress = savedInstanceState?.getInt(SEEK_SECOND_PROGRESS)
-
+        Timber.d("Debug_yhp: onCreate")
         autoDisposable.bindTo(lifecycle)
     }
 
@@ -77,7 +58,7 @@ class HomeFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        Timber.d("onCreateView")
+        Timber.d("Debug_yhp: onCreateView")
         // Inflate the layout for this fragment
         binding = FragmentHomeBinding.inflate(inflater, container, false)
         return binding.root
@@ -85,7 +66,7 @@ class HomeFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        Timber.d("onViewCreated")
+        Timber.d("Debug_yhp: onViewCreated")
         bundle = savedInstanceState
         initRecycler()
         initSeekBar()
@@ -94,31 +75,20 @@ class HomeFragment : Fragment() {
 
     override fun onSaveInstanceState(outState: Bundle) {
 
-        Timber.d("onSaveInstanceState")
-//        outState.putInt(SEEK_PROGRESS, binding.seekBar.progress)
-//        outState.putInt(SEEK_SECOND_PROGRESS, binding.seekBar.secondaryProgress)
+        Timber.d("Debug_yhp: onSaveInstanceState")
         super.onSaveInstanceState(outState)
     }
 
     override fun onResume() {
         super.onResume()
-        Timber.d("onResume")
+        Timber.d("Debug_yhp: onResume ")
         (requireActivity() as MainActivity).isHomeFragment(true)
-
-//        if(bundle != null){
-//            binding.seekBar.progress = bundle?.getInt(SEEK_PROGRESS)!!
-//            binding.seekBar.secondaryProgress = bundle?.getInt(SEEK_SECOND_PROGRESS)!!
-//        }
     }
 
     override fun onStop() {
+        Timber.d("Debug_yhp: onStop ")
         super.onStop()
-        Timber.d("onStop")
         (requireActivity() as MainActivity).isHomeFragment(true)
-
-//        if(bundle == null) bundle = Bundle()
-//        bundle?.putInt(SEEK_PROGRESS, binding.seekBar.progress)
-//        bundle?.putInt(SEEK_SECOND_PROGRESS, binding.seekBar.secondaryProgress)
     }
 
     private fun initButtons(){
@@ -146,17 +116,14 @@ class HomeFragment : Fragment() {
 
         if ((requireActivity() as MainActivity).handyMediaPlayer != null) {
             (requireActivity() as MainActivity).handyMediaPlayer!!.let {
-                playIconState = it.playIconState
-                playIconState!!
-                    .subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
-                    .subscribe{
+                it.playIconState.observe (viewLifecycleOwner){
                         if (it) {
                             binding.playButton.setIconResource(R.drawable.ic_baseline_pause_24)
                         } else {
                             binding.playButton.setIconResource(R.drawable.ic_baseline_play_arrow_24)
 
                         }
-                    }.addTo(autoDisposable)
+                }
             }
         }
     }
@@ -167,6 +134,7 @@ class HomeFragment : Fragment() {
             (requireActivity() as MainActivity).handyMediaPlayer!!.let {
                 binding.seekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener{
                     override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+                        Timber.d("Debug_yhp: onProgressChanged " + progress)
                         if (fromUser) {
                             it.getMediaPlayer()
                                 ?.seekTo(progress)
@@ -185,37 +153,25 @@ class HomeFragment : Fragment() {
                     }
                 })
 
-                progress = it.progress
-                progress!!
-                    .subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
-                    .subscribe{
-                        Timber.d("Progress=" + it)
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                            binding.seekBar.setProgress(it, false)
-                        }
-                    }.addTo(autoDisposable)
+                it.duration.observe(viewLifecycleOwner){
+                    Timber.d("Duration=" + it)
+                    binding.seekBar.max = it
+                    binding.seekBar.secondaryProgress = 0
+                }
+                it.bufferingLevel.observe(viewLifecycleOwner){
+                    Timber.d("BufferingLevel=" + it)
 
-                bufferingLevel = it.bufferingLevel
-                bufferingLevel!!
-                    .subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
-                    .subscribe{
-                        Timber.d("BufferingLevel=" + it)
-
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                            binding.seekBar.secondaryProgress = it
-                        }
-                    }.addTo(autoDisposable)
-                duration = it.duration
-                duration!!
-                    .subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
-                    .subscribe{
-                        Timber.d("Duration=" + it)
-                        binding.seekBar.max = it
-                        binding.seekBar.secondaryProgress = 0
-                    }.addTo(autoDisposable)
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                        binding.seekBar.secondaryProgress = it
+                    }
+                }
+                it.progress.observe(viewLifecycleOwner){
+                    Timber.d("Progress=" + it)
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                        binding.seekBar.setProgress(it, false)
+                    }
+                }
             }
-            //  AnimationHelper.performFragmentCircularRevealAnimation(binding.homeFragmentRoot, requireActivity(), 1)
-
         }
     }
 
@@ -233,8 +189,8 @@ class HomeFragment : Fragment() {
             tracksAdapter.registerAdapterDataObserver(object : RecyclerView.AdapterDataObserver(){
                 override fun onChanged() {
                     super.onChanged()
-                    if ((requireActivity() as MainActivity).getMedialayer() != null) {
-                        var pos = (requireActivity() as MainActivity).getMedialayer()!!.getCurrTrackPos()
+                    if ((requireActivity() as MainActivity).getHandyMedialayer() != null) {
+                        var pos = (requireActivity() as MainActivity).getHandyMedialayer()?.getCurrTrackPos()?:0
                         if(pos >= 0) binding.mainRecycler.scrollToPosition(pos)
                     }
                 }
@@ -264,10 +220,5 @@ class HomeFragment : Fragment() {
                     binding.progressBar.isVisible = it
                 }.addTo(autoDisposable)
         }
-    }
-
-    companion object{
-        private const val SEEK_PROGRESS = "SEEK_PROGRESS"
-        private const val SEEK_SECOND_PROGRESS = "SEEK_SECOND_PROGRESS"
     }
 }
