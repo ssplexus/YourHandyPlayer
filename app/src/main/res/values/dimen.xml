@@ -61,7 +61,7 @@
     <dimen name="homefrag_play_btn_layout_size">100dp</dimen>
     <dimen name="homefrag_play_btn_translationZ">15dp</dimen>
     <dimen name="homefrag_play_btn_cornerRadius">85dp</dimen>
-    <dimen name="homefrag_play_btn_iconSize">85dp</dimen>
+    <dimen name="homefrag_play_btn_iconSize">50dp</dimen>
     <dimen name="homefrag_play_btn_strokeWidth">5dp</dimen>
     <!--HomeFrag Play button }-->
 

@@ -5,6 +5,7 @@ import android.media.MediaPlayer
 import android.os.Handler
 import android.util.TypedValue
 import android.view.View
+import androidx.lifecycle.MutableLiveData
 import com.bumptech.glide.Glide
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.core.Observable
@@ -13,19 +14,22 @@ import io.reactivex.rxjava3.subjects.BehaviorSubject
 import ru.ssnexus.database_module.data.entity.JamendoTrackData
 import ru.ssnexus.yourhandyplayer.R
 import ru.ssnexus.yourhandyplayer.domain.Interactor
+import ru.ssnexus.yourhandyplayer.utils.SingleLiveEvent
 import timber.log.Timber
 import java.io.IOException
+import java.util.*
 import javax.inject.Inject
+import kotlin.concurrent.scheduleAtFixedRate
 
 class HandyMediaPlayer (val interactor: Interactor) {
 
     //Отслеживание базы данных
     var tracksData: Observable<List<JamendoTrackData>>
 
-    var playIconState: BehaviorSubject<Boolean> = BehaviorSubject.create()
-    var progress: BehaviorSubject<Int> = BehaviorSubject.create()
-    var bufferingLevel: BehaviorSubject<Int> = BehaviorSubject.create()
-    var duration: BehaviorSubject<Int> = BehaviorSubject.create()
+    var playIconState: MutableLiveData<Boolean> = MutableLiveData()
+    var progress: MutableLiveData<Int> = MutableLiveData()
+    var bufferingLevel: MutableLiveData<Int> = MutableLiveData()
+    var duration: MutableLiveData<Int> = MutableLiveData()
 
     private val mediaPlayer: MediaPlayer = MediaPlayer()
     var onClickListener: View.OnClickListener? = null
@@ -38,6 +42,8 @@ class HandyMediaPlayer (val interactor: Interactor) {
     private var runnable: Runnable? = null
     private val handler: Handler = Handler()
 
+    private val timer: Timer = Timer()
+
 
     init {
         tracksData = interactor.getTracksDataObservable()
@@ -49,6 +55,15 @@ class HandyMediaPlayer (val interactor: Interactor) {
         initPlayer()
     }
 
+    fun onStartTimer(){
+        timer.scheduleAtFixedRate(0,1000) {
+            if (isOnPlaying) progress.postValue(mediaPlayer.currentPosition)
+        }
+    }
+    fun onStopTimer(){
+        timer.cancel()
+        timer.purge()
+    }
 
     fun setTrack(track: JamendoTrackData){
         currTrack = track
@@ -128,11 +143,11 @@ class HandyMediaPlayer (val interactor: Interactor) {
             if(it.isPlaying){
                 it.pause()
                 isOnPlaying = false
-                playIconState.onNext(false)
+                playIconState.postValue(false)
             }else{
                 it.start()
-                playIconState.onNext(true)
-//                updateSeekBar()
+                playIconState.postValue(true)
+
             }
         }
     }
@@ -141,36 +156,27 @@ class HandyMediaPlayer (val interactor: Interactor) {
         onClickListener = View.OnClickListener {
             togglePlayPause()
         }
-        playIconState.onNext(false)
+        playIconState.postValue(false)
         mediaPlayer.let {
             it.setOnBufferingUpdateListener { mp, percent ->
                 var ratio: Float = percent / 100.0f
                 val result = mp.duration * ratio
-                bufferingLevel.onNext(result.toInt())
+                bufferingLevel.postValue(result.toInt())
             }
             it.setAudioStreamType(AudioManager.STREAM_MUSIC)
             it.setOnPreparedListener{
                 Timber.d("OnPreparedListener")
-                progress.onNext(0)
-                bufferingLevel.onNext(0)
-                duration.onNext(it.duration)
-                updateSeekBar()
+                progress.postValue(0)
+                bufferingLevel.postValue(0)
+                duration.postValue(it.duration)
+                onStartTimer()
                 if (isOnPlaying) togglePlayPause()
             }
             it.setOnCompletionListener {
-                playIconState.onNext(true)
+                onNextTrack()
             }
         }
 
-    }
-
-    fun updateSeekBar(){
-        Timber.d("updateSeekBar")
-        if (isOnPlaying) progress.onNext(mediaPlayer.currentPosition)
-        runnable = Runnable {
-            updateSeekBar()
-        }
-        handler?.postDelayed(runnable!!, 1000)
     }
 
     fun getMediaPlayer() = mediaPlayer
@@ -180,5 +186,7 @@ class HandyMediaPlayer (val interactor: Interactor) {
             if(mediaPlayer.isPlaying == true) mediaPlayer.stop()
             mediaPlayer.release()
         }
+        timer.cancel()
+        timer.purge()
     }
 }

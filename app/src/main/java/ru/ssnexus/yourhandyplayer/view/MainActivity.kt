@@ -33,8 +33,6 @@ class MainActivity : AppCompatActivity() {
     private val autoDisposable = AutoDisposable()
     private lateinit var binding: ActivityMainBinding
 
-    var playIconState: BehaviorSubject<Boolean>? = null
-
     var handyMediaPlayer: HandyMediaPlayer? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -129,17 +127,14 @@ class MainActivity : AppCompatActivity() {
         handyMediaPlayer = HandyMediaPlayer(interactor)
         if (handyMediaPlayer != null) {
             binding.trackControl.setOnClickListener(handyMediaPlayer!!.onClickListener)
-            playIconState = handyMediaPlayer!!.playIconState
-            playIconState!!
-                .subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
-                .subscribe{
-                    if (it) {
-                        binding.trackControl.setImageResource(R.drawable.ic_baseline_stop_24)
-                    } else {
+            handyMediaPlayer!!.playIconState.observe(this){
+                if (it) {
+                    binding.trackControl.setImageResource(R.drawable.ic_baseline_stop_24)
+                } else {
 
-                        binding.trackControl.setImageResource(R.drawable.ic_baseline_play_arrow_24)
-                    }
-                }.addTo(autoDisposable)
+                    binding.trackControl.setImageResource(R.drawable.ic_baseline_play_arrow_24)
+                }
+            }
         }
     }
 
@@ -160,7 +155,7 @@ class MainActivity : AppCompatActivity() {
 
     }
 
-    fun getMedialayer() = handyMediaPlayer
+    fun getHandyMedialayer() = handyMediaPlayer
 
     override fun onDestroy() {
         super.onDestroy()

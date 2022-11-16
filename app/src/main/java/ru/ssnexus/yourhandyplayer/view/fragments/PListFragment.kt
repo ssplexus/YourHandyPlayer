@@ -110,9 +110,9 @@ class PListFragment : Fragment() {
                         super.onChanged()
                         val main = (requireActivity() as MainActivity)
                         main?.let {
-                            var pos = it.getMedialayer()!!.getCurrTrackPos()
+                            var pos = it.getHandyMedialayer()!!.getCurrTrackPos()
                             if(pos >= 0) binding.mainRecycler.scrollToPosition(pos)
-                            it.getMedialayer()?.let {hmp->
+                            it.getHandyMedialayer()?.let {hmp->
                                 hmp.getCurrTrackData()?.let { track -> it.setBottomNavigationTrack(track) }
                             }
                         }
