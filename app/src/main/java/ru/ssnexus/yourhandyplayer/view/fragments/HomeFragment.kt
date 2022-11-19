@@ -6,6 +6,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.SeekBar
+import android.widget.Toast
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
@@ -14,6 +15,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.schedulers.Schedulers
+import kotlinx.coroutines.*
 import ru.ssnexus.database_module.data.entity.JamendoTrackData
 import ru.ssnexus.mymoviesearcher.view.rv_adapters.TopSpacingItemDecoration
 import ru.ssnexus.mymoviesearcher.view.rv_adapters.TrackListRecyclerAdapter
@@ -50,7 +52,6 @@ class HomeFragment : Fragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         retainInstance = true
-        Timber.d("Debug_yhp: onCreate")
         autoDisposable.bindTo(lifecycle)
     }
 
@@ -58,7 +59,6 @@ class HomeFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        Timber.d("Debug_yhp: onCreateView")
         // Inflate the layout for this fragment
         binding = FragmentHomeBinding.inflate(inflater, container, false)
         return binding.root
@@ -66,7 +66,6 @@ class HomeFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        Timber.d("Debug_yhp: onViewCreated")
         bundle = savedInstanceState
         initRecycler()
         initSeekBar()
@@ -74,19 +73,15 @@ class HomeFragment : Fragment() {
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
-
-        Timber.d("Debug_yhp: onSaveInstanceState")
         super.onSaveInstanceState(outState)
     }
 
     override fun onResume() {
         super.onResume()
-        Timber.d("Debug_yhp: onResume ")
         (requireActivity() as MainActivity).isHomeFragment(true)
     }
 
     override fun onStop() {
-        Timber.d("Debug_yhp: onStop ")
         super.onStop()
         (requireActivity() as MainActivity).isHomeFragment(true)
     }
@@ -126,6 +121,7 @@ class HomeFragment : Fragment() {
                 }
             }
         }
+
     }
 
     private fun initSeekBar(){
@@ -184,6 +180,7 @@ class HomeFragment : Fragment() {
             }
             tracksAdapter = TrackListRecyclerAdapter(object : TrackListRecyclerAdapter.OnItemClickListener{
                 override fun click(track: JamendoTrackData) {
+
                 }
             })
             tracksAdapter.registerAdapterDataObserver(object : RecyclerView.AdapterDataObserver(){

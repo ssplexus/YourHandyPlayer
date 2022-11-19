@@ -95,8 +95,8 @@
                 android:orientation="horizontal"
                 android:weightSum="100"
                 app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                >
+                app:layout_constraintTop_toTopOf="parent">
+
                 <LinearLayout
                     android:id="@+id/tags_btn"
                     android:layout_width="match_parent"
@@ -115,8 +115,7 @@
                         android:paddingVertical="5dp"
                         android:text="Choose your mood"
                         android:textAlignment="center"
-                        android:textColor="@color/white"
-                        />
+                        android:textColor="@color/white" />
                 </LinearLayout>
 
                 <LinearLayout
@@ -124,16 +123,16 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:layout_weight="85"
-                    android:clickable="true"
-                    android:background="@drawable/right_shape">
+                    android:background="@drawable/right_shape"
+                    android:clickable="true">
 
                     <ImageView
                         android:id="@+id/play_list_iv"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
+                        android:layout_gravity="center_vertical"
                         android:paddingHorizontal="10dp"
                         android:src="@drawable/ic_baseline_menu_24"
-                        android:layout_gravity="center_vertical"
 
                         />
                 </LinearLayout>

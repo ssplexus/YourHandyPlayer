@@ -16,6 +16,12 @@ class MainRepository(private val trackDao: TrackDao) {
 
     }
 
+    fun getTrackFavStateById(id : Int) : Int = trackDao.getFavStateById(id)
+
+    fun updateTrackFavStateById(id : Int){
+        trackDao.updateFavoriteById(id)
+    }
+
 //    fun getAllFromDB(): Observable<List<Track>> = trackDao.getTracks()
 
     fun getSize() : Int = trackDao.getSize()

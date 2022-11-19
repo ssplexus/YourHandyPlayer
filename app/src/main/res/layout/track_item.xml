@@ -33,17 +33,32 @@
 
                 <TextView
                     android:id="@+id/title"
-                    android:layout_width="@dimen/track_item_tview_normal_width"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:padding="@dimen/track_item_tview_normal_pad"
+                    android:padding="10dp"
                     android:textAlignment="center"
                     android:textAppearance="@style/TextAppearance.AppCompat.Headline"
                     app:layout_constraintLeft_toRightOf="@+id/poster"
-                    app:layout_constraintRight_toRightOf="parent"
+                    app:layout_constraintRight_toLeftOf="@id/favorite"
                     app:layout_constraintTop_toTopOf="parent"
                     android:background="@color/blue_200"
                     android:textColor="@color/white"
+                    android:autoSizeTextType="uniform"
+                    android:maxLines="2"
                     tools:text="Title" />
+
+                <ImageView
+                    app:layout_constraintLeft_toRightOf="@id/title"
+                    android:id="@+id/favorite"
+                    android:layout_width="wrap_content"
+                    android:layout_height="0dp"
+                    android:src="@drawable/ic_baseline_favorite_border_24"
+                    android:background="@color/blue_200"
+                    android:padding="5dp"
+                    app:layout_constraintRight_toRightOf="parent"
+                    app:layout_constraintBottom_toTopOf="@id/description"
+                    app:layout_constraintTop_toTopOf="parent"
+                    />
 
                 <TextView
                     android:id="@+id/description"

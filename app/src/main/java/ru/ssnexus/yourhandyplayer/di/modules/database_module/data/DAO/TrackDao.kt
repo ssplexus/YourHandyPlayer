@@ -21,6 +21,12 @@ interface TrackDao {
     @Query("SELECT * FROM tracks")
     fun getCachedTracks(): List<JamendoTrackData>
 
+    @Query("SELECT fav_state FROM tracks WHERE id = :id")
+    fun getFavStateById(id: Int): Int
+
+    @Query("UPDATE tracks SET fav_state = fav_state * (-1) WHERE id = :id")
+    fun updateFavoriteById(id : Int);
+
     // Очистка таблицы
     @Query("DELETE FROM tracks")
     fun nukeTable()

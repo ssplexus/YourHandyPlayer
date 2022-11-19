@@ -43,7 +43,8 @@ data class JamendoTrackData(
     @ColumnInfo(name = "releasedate") val releasedate: String,
     @ColumnInfo(name = "shareurl") val shareurl: String,
     @ColumnInfo(name = "shorturl") val shorturl: String,
-    @ColumnInfo(name = "waveform") val waveform: String
+    @ColumnInfo(name = "waveform") val waveform: String,
+    @ColumnInfo(name = "fav_state") var fav_state: Int = -1
 
 ) : Parcelable
 

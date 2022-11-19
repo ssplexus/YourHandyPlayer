@@ -85,6 +85,14 @@ class Interactor(val repo: MainRepository, val retrofitService: JamendoApi, priv
 //            .subscribe()
 //    }
 
+    // Получить состояние карточки фильма (в избранном или нет)
+    fun getTrackFavState(trackData: JamendoTrackData) : Int = repo.getTrackFavStateById(trackData.id)
+
+    // Обновить состояние "в избранном" карточки фильма
+    fun updateTrackFavState(trackData: JamendoTrackData){
+        repo.updateTrackFavStateById(trackData.id)
+    }
+
     fun clearCache()
     {
         repo.clearCache()
