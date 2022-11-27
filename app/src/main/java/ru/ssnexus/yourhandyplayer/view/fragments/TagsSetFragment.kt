@@ -103,6 +103,8 @@ class TagsSetFragment : Fragment() {
                 }
             }
         })
+
+        (requireActivity() as MainActivity).title = "Choose tags"
     }
 
     override fun onResume() {

@@ -4,6 +4,9 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.subjects.BehaviorSubject
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import ru.ssnexus.database_module.data.entity.JamendoTrackData
 import ru.ssnexus.yourhandyplayer.App
 import ru.ssnexus.yourhandyplayer.domain.Interactor
@@ -14,7 +17,11 @@ class HomeFragmentViewModel : ViewModel(){
 
     //Отслеживание базы данных
     var tracksData: Observable<List<JamendoTrackData>>
-    val tagsPropertyLifeData: MutableLiveData<String> = MutableLiveData()
+    var favoritesTracksData: Observable<List<JamendoTrackData>>
+
+
+    val tagsPropertyLiveData: MutableLiveData<String> = MutableLiveData()
+    val modePropertyLiveData: MutableLiveData<String>
     //Отслеживание данных состояния прогрессбара
     val showProgressBar: BehaviorSubject<Boolean>
 
@@ -24,23 +31,38 @@ class HomeFragmentViewModel : ViewModel(){
 
     init {
         App.instance.dagger.inject(this)
+
         tracksData = interactor.getTracksDataObservable()
+        favoritesTracksData = interactor.getFavoritesTracksDataObservable()
+
         showProgressBar = interactor.progressBarState
-        getTagsProperty()
+
+        tagsPropertyLiveData.value = interactor.getDefaultTagsFromPreferences()
+        modePropertyLiveData = interactor.getMusicModeLiveDataFromPreferences()
     }
 
-    private fun getTagsProperty() {
-        //Кладем категорию в LiveData
-        tagsPropertyLifeData.value = interactor.getDefaultTagsFromPreferences()
+    fun refreshData(){
+        tracksData.repeat()
     }
 
-    //Получить данные 1 стрницы
-    fun updateTracks() {
-        interactor.getTracksByTagsFromApi(offset = 0)
+    fun getMusicMode() = interactor.getMusicModeFromPreferences()
+
+    fun getTagsPreferences(): String{
+        return interactor.getDefaultTagsFromPreferences()
+    }
+    fun changeMusicMode(){
+        interactor.changeMusicMode()
     }
 
     //Получить трэки
     fun getNextTracks() {
         interactor.getTracksByTagsFromApi()
+    }
+
+    fun updateTracks(tags: String) {
+        CoroutineScope(Dispatchers.IO).launch {
+            interactor.clearTrackDataCache()
+        }
+        interactor.getTracksByTagsFromApi(tags = tags)
     }
 }

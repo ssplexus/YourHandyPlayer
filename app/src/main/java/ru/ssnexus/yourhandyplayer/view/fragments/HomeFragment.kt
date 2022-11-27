@@ -20,12 +20,15 @@ import ru.ssnexus.database_module.data.entity.JamendoTrackData
 import ru.ssnexus.mymoviesearcher.view.rv_adapters.TopSpacingItemDecoration
 import ru.ssnexus.mymoviesearcher.view.rv_adapters.TrackListRecyclerAdapter
 import ru.ssnexus.yourhandyplayer.R
+import ru.ssnexus.yourhandyplayer.data.preferences.PreferenceProvider
 import ru.ssnexus.yourhandyplayer.databinding.FragmentHomeBinding
 import ru.ssnexus.yourhandyplayer.utils.AutoDisposable
 import ru.ssnexus.yourhandyplayer.utils.addTo
 import ru.ssnexus.yourhandyplayer.view.MainActivity
 import ru.ssnexus.yourhandyplayer.viewmodel.HomeFragmentViewModel
 import timber.log.Timber
+import java.util.concurrent.Executor
+import java.util.concurrent.Executors
 
 
 class HomeFragment : Fragment() {
@@ -38,9 +41,11 @@ class HomeFragment : Fragment() {
         //Используем backing field
         set(value) {
             //Если пришло другое значение, то кладем его в переменную
-            field = value
-            //Обновляем RV адаптер
-            tracksAdapter.addItems(field)
+            if(field != value){
+                field = value
+                //Обновляем RV адаптер
+                tracksAdapter.addItems(field)
+            }
         }
 
     private val autoDisposable = AutoDisposable()
@@ -48,6 +53,8 @@ class HomeFragment : Fragment() {
     private val viewModel by lazy {
         ViewModelProvider.NewInstanceFactory().create(HomeFragmentViewModel::class.java)
     }
+
+    private val scope = CoroutineScope(Dispatchers.IO)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -70,6 +77,10 @@ class HomeFragment : Fragment() {
         initRecycler()
         initSeekBar()
         initButtons()
+
+        (requireActivity() as MainActivity).title = "Home page"
+
+
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -78,7 +89,18 @@ class HomeFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
+        Timber.d("OnResume")
         (requireActivity() as MainActivity).isHomeFragment(true)
+        if(viewModel.getMusicMode() == PreferenceProvider.FAVORITES_MODE) {
+            binding.musicModeTview.text = "FAVORITES"
+            binding.musicModeButton.setImageResource(R.drawable.ic_baseline_favorite_24)
+            tracksDataBase = viewModel.favoritesTracksData.blockingFirst()
+        }
+        else {
+            binding.musicModeTview.text = viewModel.getTagsPreferences()
+            binding.musicModeButton.setImageResource(R.drawable.ic_round_numbers_24)
+            tracksDataBase = viewModel.tracksData.blockingFirst()
+        }
     }
 
     override fun onStop() {
@@ -87,11 +109,15 @@ class HomeFragment : Fragment() {
     }
 
     private fun initButtons(){
-        binding.tagsBtn.setOnClickListener {
+        binding.musicModeTview.setOnClickListener {
             (requireActivity() as MainActivity).launchFragment(TagsSetFragment())
         }
-        binding.playListBtn.setOnClickListener {
+        binding.musicListButton.setOnClickListener {
             (requireActivity() as MainActivity).launchFragment(PListFragment())
+        }
+        
+        binding.musicModeButton.setOnClickListener {
+            viewModel.changeMusicMode()
         }
 
         binding.forwardButton.setOnClickListener {
@@ -121,6 +147,22 @@ class HomeFragment : Fragment() {
                 }
             }
         }
+
+        viewModel.modePropertyLiveData.observe(viewLifecycleOwner, Observer<String> {
+            Timber.d("modePropertyLifeData " + it)
+
+            if(it == PreferenceProvider.FAVORITES_MODE) {
+                binding.musicModeTview.text = "FAVORITES"
+                binding.musicModeButton.setImageResource(R.drawable.ic_baseline_favorite_24)
+                tracksDataBase = viewModel.favoritesTracksData.blockingFirst()
+
+            }
+            else {
+                binding.musicModeTview.text = viewModel.getTagsPreferences()
+                binding.musicModeButton.setImageResource(R.drawable.ic_round_numbers_24)
+                tracksDataBase = viewModel.tracksData.blockingFirst()
+            }
+        })
 
     }
 
@@ -180,16 +222,7 @@ class HomeFragment : Fragment() {
             }
             tracksAdapter = TrackListRecyclerAdapter(object : TrackListRecyclerAdapter.OnItemClickListener{
                 override fun click(track: JamendoTrackData) {
-
-                }
-            })
-            tracksAdapter.registerAdapterDataObserver(object : RecyclerView.AdapterDataObserver(){
-                override fun onChanged() {
-                    super.onChanged()
-                    if ((requireActivity() as MainActivity).getHandyMedialayer() != null) {
-                        var pos = (requireActivity() as MainActivity).getHandyMedialayer()?.getCurrTrackPos()?:0
-                        if(pos >= 0) binding.mainRecycler.scrollToPosition(pos)
-                    }
+                    (requireActivity() as MainActivity).launchDetailsFragment(track)
                 }
             })
             //Присваиваем адаптер
@@ -197,20 +230,58 @@ class HomeFragment : Fragment() {
 
             //Присвоим layoutmanager
             layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
+
+            tracksAdapter.registerAdapterDataObserver(object : RecyclerView.AdapterDataObserver(){
+                override fun onChanged() {
+                    super.onChanged()
+//                    if ((requireActivity() as MainActivity).getHandyMedialayer() != null) {
+//                        var pos = (requireActivity() as MainActivity).getHandyMedialayer()?.getCurrTrackPos()?:0
+//                        if(pos >= 0) binding.mainRecycler.scrollToPosition(pos)
+//
+//                        val lManager = layoutManager
+//                        if (lManager is LinearLayoutManager)
+//                        {
+//                            if(lManager.findLastCompletelyVisibleItemPosition() >= lManager.itemCount - 2)
+//                            {
+//                                //Делаем новый запрос трэков на сервер
+//                                viewModel.getNextTracks()
+//                            }
+//                        }
+//                    }
+                }
+            })
+
             //Применяем декоратор для отступов
             val decorator = TopSpacingItemDecoration(8)
             addItemDecoration(decorator)
 
-            viewModel.tagsPropertyLifeData.observe(viewLifecycleOwner, Observer<String> {
-                binding.tagsTv.text = it
+            viewModel.tagsPropertyLiveData.observe(viewLifecycleOwner, Observer<String> {
+                if(viewModel.getMusicMode() == PreferenceProvider.TAGS_MODE) {
+                    Timber.d("" + viewModel.getTagsPreferences() + " " + it)
+
+                    if(!it.equals(viewModel.getTagsPreferences())){
+                        binding.musicModeTview.text = it
+                        viewModel.updateTracks(it)
+                    }
+                }
             })
 
             viewModel.tracksData.subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe{tracks_data ->
-//                    Timber.d("Data!!!")
-                    tracksDataBase = tracks_data
-                }
+                    if(isAdded)
+                        if(viewModel.getMusicMode() == PreferenceProvider.TAGS_MODE)
+                            tracksDataBase = tracks_data
+                }.addTo(autoDisposable)
+
+            viewModel.favoritesTracksData.subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe{fav_tracks_data ->
+                    if(isAdded)
+                        if(viewModel.getMusicMode() == PreferenceProvider.FAVORITES_MODE)
+                            tracksDataBase = fav_tracks_data
+                }.addTo(autoDisposable)
+
             viewModel.showProgressBar
                 .subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
                 .subscribe{
