@@ -21,6 +21,7 @@ import ru.ssnexus.database_module.data.entity.JamendoTrackData
 import ru.ssnexus.mymoviesearcher.view.rv_adapters.TopSpacingItemDecoration
 import ru.ssnexus.mymoviesearcher.view.rv_adapters.TrackListRecyclerAdapter
 import ru.ssnexus.yourhandyplayer.App
+import ru.ssnexus.yourhandyplayer.data.preferences.PreferenceProvider
 import ru.ssnexus.yourhandyplayer.databinding.ActivityMainBinding
 import ru.ssnexus.yourhandyplayer.databinding.FragmentPListBinding
 import ru.ssnexus.yourhandyplayer.di.modules.remote_module.entity.jamendo.JamendoTrack
@@ -71,6 +72,7 @@ class PListFragment : Fragment() {
 
         // Инициализируем RecyclerView
         initRecycler()
+        (requireActivity() as MainActivity).title = "Play list"
     }
 
     override fun onStop() {
@@ -130,9 +132,18 @@ class PListFragment : Fragment() {
             viewModel.tracksData.subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe{tracks_data ->
-                    Timber.d("Data!!!")
-                    tracksDataBase = tracks_data
-                }
+                    if(isAdded)
+                        if(viewModel.getMusicMode() == PreferenceProvider.TAGS_MODE)
+                            tracksDataBase = tracks_data
+                }.addTo(autoDisposable)
+
+            viewModel.favoritesTracksData.subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe{fav_tracks_data ->
+                    if(isAdded)
+                        if(viewModel.getMusicMode() == PreferenceProvider.FAVORITES_MODE)
+                            tracksDataBase = fav_tracks_data
+                }.addTo(autoDisposable)
 
             //Делаем refresh на swipe up
             setOnTouchListener { view, motionEvent ->

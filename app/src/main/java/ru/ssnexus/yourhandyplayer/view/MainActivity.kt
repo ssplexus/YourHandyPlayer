@@ -21,6 +21,7 @@ import ru.ssnexus.yourhandyplayer.domain.Interactor
 import ru.ssnexus.yourhandyplayer.mediaplayer.HandyMediaPlayer
 import ru.ssnexus.yourhandyplayer.utils.AutoDisposable
 import ru.ssnexus.yourhandyplayer.utils.addTo
+import ru.ssnexus.yourhandyplayer.view.fragments.DetailsFragment
 import ru.ssnexus.yourhandyplayer.view.fragments.HomeFragment
 import timber.log.Timber
 import javax.inject.Inject
@@ -41,16 +42,17 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         //Передаем его в метод
         setContentView(binding.root)
-
         autoDisposable.bindTo(lifecycle)
 
         App.instance.dagger.inject(this)
 
         CoroutineScope(Dispatchers.IO).launch {
-            interactor.clearCache()
+            interactor.clearTrackDataCache()
+            interactor.clearFavoritesTrackDataCache()
         }
-        initPlayer()
         interactor.getTracksByTagsFromApi()
+        initPlayer()
+
         //Запускаем фрагмент при старте
         launchFragment(HomeFragment())
     }
@@ -75,6 +77,24 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun launchFragment(fragment: Fragment) {
+        //Запускаем фрагмент
+        supportFragmentManager
+            .beginTransaction()
+            .replace(R.id.fragment_placeholder, fragment)
+            .addToBackStack(null)
+            .commit()
+    }
+
+    fun launchDetailsFragment(track: JamendoTrackData) {
+        //Создаем "посылку"
+        val bundle = Bundle()
+        //Кладем наш фильм в "посылку"
+        bundle.putParcelable(R.string.parcel_item_track.toString(), track)
+        //Кладем фрагмент с деталями в перменную
+        val fragment = DetailsFragment()
+        //Прикрепляем нашу "посылку" к фрагменту
+        fragment.arguments = bundle
+
         //Запускаем фрагмент
         supportFragmentManager
             .beginTransaction()

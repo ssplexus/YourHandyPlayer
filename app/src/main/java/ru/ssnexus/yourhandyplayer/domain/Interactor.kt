@@ -58,8 +58,11 @@ class Interactor(val repo: MainRepository, val retrofitService: JamendoApi, priv
     }
 
     fun getTracksDataObservable(): Observable<List<JamendoTrackData>> = repo.getTracksDataObservable()
+    fun getFavoritesTracksDataObservable(): Observable<List<JamendoTrackData>> = repo.getFavoritesTracksDataObservable()
 
-    fun getTracksData(): List<JamendoTrackData> = repo.getTracksData()
+    fun getTracksData() = repo.getTracksData()
+
+    fun getFavoritesTracksData() = repo.getFavoritesTracksData()
 
     fun getDBSize(): Int {
         var result = 0
@@ -69,12 +72,7 @@ class Interactor(val repo: MainRepository, val retrofitService: JamendoApi, priv
         return result
     }
 
-//    // Получаем результат запроса поиска
-//    fun getSearchResultFromApi(search: String, page: Int = 1): Observable<List<Film>> = retrofitService.getFilmFromSearch(API.KEY, "ru-RU", search, page)
-//        .map {
-//            Converter.convertApiListToDtoList(it.tmdbFilms)
-//        }
-//
+    fun isInFavorites(trackData: JamendoTrackData) = repo.isInFavorites(trackData.id)
 
 //    // Обновление rview исходными значениями при очистки поля поиска фильмов
 //    fun recallData(){
@@ -85,9 +83,28 @@ class Interactor(val repo: MainRepository, val retrofitService: JamendoApi, priv
 //            .subscribe()
 //    }
 
-    fun clearCache()
-    {
-        repo.clearCache()
+    // Получить состояние карточки фильма (в избранном или нет)
+    fun getTrackFavState(trackData: JamendoTrackData) : Int = repo.getTrackFavStateById(trackData.id)
+
+    // Обновить состояние "в избранном" карточки фильма
+    fun updateTrackFavState(trackData: JamendoTrackData){
+        repo.updateTrackFavStateById(trackData.id)
+    }
+
+    fun addToFavorites (trackData: JamendoTrackData) {
+        repo.addToFavorites(trackData)
+    }
+
+    fun removeFromFavorites(id: Int) {
+        repo.removeFromFavorites(id)
+    }
+
+    fun clearTrackDataCache()    {
+        repo.clearTrackDataCache()
+    }
+
+    fun clearFavoritesTrackDataCache()    {
+        repo.clearFavoritesTrackDataCache()
     }
 
     //Метод для получения настроек
@@ -96,6 +113,12 @@ class Interactor(val repo: MainRepository, val retrofitService: JamendoApi, priv
     fun saveTagsToPreferences(tags : String) {
         preferences.saveTags(tags)
     }
+
+    fun getMusicModeFromPreferences() = preferences.getMode()
+
+    fun getMusicModeLiveDataFromPreferences() = preferences.modePropertyLiveData
+
+    fun changeMusicMode() = preferences.changeMode()
 
     //Получить время первого запуска
     fun getFirstLaunchTime() = preferences.getFirstLaunchTime()

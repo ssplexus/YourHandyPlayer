@@ -13,6 +13,7 @@ import javax.inject.Inject
 class PListFragmentViewModel : ViewModel() {
     //Отслеживание базы данных
     var tracksData: Observable<List<JamendoTrackData>>
+    var favoritesTracksData: Observable<List<JamendoTrackData>>
     //Отслеживание данных состояния прогрессбара
     val showProgressBar: BehaviorSubject<Boolean>
     //Инициализируем интерактор
@@ -21,7 +22,10 @@ class PListFragmentViewModel : ViewModel() {
 
     init {
         App.instance.dagger.inject(this)
+
         tracksData = interactor.getTracksDataObservable()
+        favoritesTracksData = interactor.getFavoritesTracksDataObservable()
+
         showProgressBar = interactor.progressBarState
     }
 
@@ -34,4 +38,6 @@ class PListFragmentViewModel : ViewModel() {
     fun getNextTracks() {
         interactor.getTracksByTagsFromApi()
     }
+
+    fun getMusicMode() = interactor.getMusicModeFromPreferences()
 }

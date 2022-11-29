@@ -88,56 +88,46 @@
             android:gravity="center_horizontal"
             android:paddingTop="80dp">
 
-            <LinearLayout
-                android:id="@+id/horlayout"
-                android:layout_width="350dp"
-                android:layout_height="80dp"
-                android:orientation="horizontal"
-                android:weightSum="100"
-                app:layout_constraintBottom_toBottomOf="parent"
+
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                android:id="@+id/music_mode_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="7dp"
+                android:backgroundTint="@color/blue_100"
+                app:backgroundTint="@color/white"
+                app:borderWidth="2dp"
+                app:fabSize="auto"
                 app:layout_constraintTop_toTopOf="parent"
-                >
-                <LinearLayout
-                    android:id="@+id/tags_btn"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:layout_weight="15"
-                    android:background="@drawable/left_shape"
-                    android:clickable="true">
+                app:srcCompat="@drawable/ic_round_numbers_24"
+                app:tint="@color/white" />
 
-                    <TextView
-                        android:id="@+id/tags_tv"
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:autoSizeTextType="uniform"
-                        android:maxLines="3"
-                        android:paddingHorizontal="15dp"
-                        android:paddingVertical="5dp"
-                        android:text="Choose your mood"
-                        android:textAlignment="center"
-                        android:textColor="@color/white"
-                        />
-                </LinearLayout>
+            <TextView
+                android:id="@+id/music_mode_tview"
+                android:layout_width="180dp"
+                android:layout_height="65dp"
+                android:autoSizeTextType="uniform"
+                android:maxLines="3"
+                android:paddingHorizontal="15dp"
+                android:text="Choose your mood"
+                android:textAlignment="center"
+                android:textAllCaps="false"
+                android:textColor="@color/white"
+                android:background="@drawable/round_selector_shape"/>
 
-                <LinearLayout
-                    android:id="@+id/play_list_btn"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:layout_weight="85"
-                    android:clickable="true"
-                    android:background="@drawable/right_shape">
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                android:id="@+id/music_list_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="7dp"
+                android:backgroundTint="@color/blue_100"
+                app:backgroundTint="@color/white"
+                app:borderWidth="2dp"
+                app:fabSize="auto"
+                app:layout_constraintTop_toTopOf="parent"
+                app:srcCompat="@drawable/ic_round_queue_music_24"
+                app:tint="@color/white" />
 
-                    <ImageView
-                        android:id="@+id/play_list_iv"
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:paddingHorizontal="10dp"
-                        android:src="@drawable/ic_baseline_menu_24"
-                        android:layout_gravity="center_vertical"
-
-                        />
-                </LinearLayout>
-            </LinearLayout>
         </LinearLayout>
 
         <LinearLayout
@@ -169,10 +159,9 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_margin="8dp"
-                tools:listitem="@layout/track_item"
-                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
                 android:orientation="horizontal"
-                />
+                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                tools:listitem="@layout/track_item" />
 
         </LinearLayout>
 

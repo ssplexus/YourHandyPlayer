@@ -45,7 +45,8 @@ object Converter {
             releasedate = jamendoTrack.releasedate,
             shareurl = jamendoTrack.shorturl,
             shorturl = jamendoTrack.shorturl,
-            waveform = jamendoTrack.waveform
+            waveform = jamendoTrack.waveform,
+            fav_state = -1
         )
     }
 }

@@ -17,7 +17,7 @@
     <string name="no">No</string>
     <string name="cancel">Cancel</string>
     <string name="ok">Ok</string>
-    <string name="parcel_item_film">film</string>
+    <string name="parcel_item_track">TRACK</string>
     <string name="is_empty_list">Your list is empty</string>
     <string name="poster_small">w342</string>
     <string name="poster_normal">w500</string>
