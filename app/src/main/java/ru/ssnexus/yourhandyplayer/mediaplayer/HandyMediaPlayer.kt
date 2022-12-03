@@ -24,7 +24,7 @@ import kotlin.concurrent.scheduleAtFixedRate
 class HandyMediaPlayer (val interactor: Interactor) {
 
     //Отслеживание базы данных
-    var tracksData: Observable<List<JamendoTrackData>>
+//    var tracksData: Observable<List<JamendoTrackData>>
 
     var playIconState: MutableLiveData<Boolean> = MutableLiveData()
     var progress: MutableLiveData<Int> = MutableLiveData()
@@ -39,19 +39,16 @@ class HandyMediaPlayer (val interactor: Interactor) {
     private var currTrack: JamendoTrackData? = null
     private var isOnPlaying  = false
 
-    private var runnable: Runnable? = null
-    private val handler: Handler = Handler()
-
     private val timer: Timer = Timer()
 
 
     init {
-        tracksData = interactor.getTracksDataObservable()
-        tracksData.subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe{tracks_data ->
-                trackList = tracks_data
-            }
+//        tracksData = interactor.getTracksDataObservable()
+//        tracksData.subscribeOn(Schedulers.io())
+//            .observeOn(AndroidSchedulers.mainThread())
+//            .subscribe{tracks_data ->
+//                trackList = tracks_data
+//            }
         initPlayer()
     }
 
@@ -60,9 +57,10 @@ class HandyMediaPlayer (val interactor: Interactor) {
             if (isOnPlaying) progress.postValue(mediaPlayer.currentPosition)
         }
     }
-    fun onStopTimer(){
-        timer.cancel()
-        timer.purge()
+
+    fun setTrackList(list:List<JamendoTrackData>){
+        if (isOnPlaying) togglePlayPause()
+        trackList = list
     }
 
     fun setTrack(track: JamendoTrackData){
@@ -103,6 +101,7 @@ class HandyMediaPlayer (val interactor: Interactor) {
     fun isSetTrack() : Boolean = if(currTrack != null) true else false
 
     fun onPlay() {
+        if(trackList.isEmpty()) return
         if (!isPlaying()) {
             isOnPlaying = true
             if( !isSetTrack()) trackList?.first().let { setTrack(it) }

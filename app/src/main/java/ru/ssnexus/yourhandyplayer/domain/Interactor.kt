@@ -33,6 +33,8 @@ class Interactor(val repo: MainRepository, val retrofitService: JamendoApi, priv
 
         //Показываем ProgressBar
         progressBarState.onNext(true)
+        Timber.e("Info!-0 " + getDBSize())
+        Timber.e("Info!-offset " + offset)
         //Метод getDefaultCategoryFromPreferences() будет получать при каждом запросе нужный нам список фильмов
         retrofitService.getTracksByTags(API.CLIENT_ID,
                                         API.PAGE_LIMIT,
@@ -52,7 +54,8 @@ class Interactor(val repo: MainRepository, val retrofitService: JamendoApi, priv
                     Timber.e("Success: Get SCloud data" + it.get(1).name)
                     progressBarState.onNext(false)
                     repo.putToDb(it)
-                    Timber.e("Info!" + repo.getTracksData().size)
+                    Timber.e("Info!-1 " + repo.getTracksData().size)
+                    Timber.e("Info!-2 " + getDBSize())
                 }
             )
     }

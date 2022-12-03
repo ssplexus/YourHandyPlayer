@@ -50,7 +50,7 @@ class MainActivity : AppCompatActivity() {
             interactor.clearTrackDataCache()
             interactor.clearFavoritesTrackDataCache()
         }
-        interactor.getTracksByTagsFromApi()
+//        interactor.getTracksByTagsFromApi()
         initPlayer()
 
         //Запускаем фрагмент при старте

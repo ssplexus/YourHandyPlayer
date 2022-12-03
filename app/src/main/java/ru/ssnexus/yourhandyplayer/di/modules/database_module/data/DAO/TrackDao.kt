@@ -20,11 +20,11 @@ interface TrackDao {
     fun getCachedFavoritesTracksObservable(): Observable<List<JamendoTrackData>>
 
     //Кладём списком в БД, в случае конфликта перезаписываем
-    @Insert(entity = JamendoTrackData::class, onConflict = OnConflictStrategy.REPLACE)
+    @Insert(entity = JamendoTrackData::class, onConflict = OnConflictStrategy.IGNORE)
     fun insertAll(list: List<JamendoTrackData>)
 
     //Кладём списком в БД, в случае конфликта перезаписываем
-    @Insert(entity = JamendoTrackData::class, onConflict = OnConflictStrategy.REPLACE)
+    @Insert(entity = FavoritesTrackData::class, onConflict = OnConflictStrategy.IGNORE)
     fun insertAllFavorites(list: List<JamendoTrackData>)
 
     @Query("SELECT * FROM tracks")
@@ -42,8 +42,6 @@ interface TrackDao {
     @Query("UPDATE tracks SET fav_state = fav_state * (-1) WHERE id = :id")
     fun updateFavoriteById(id : Int)
 
-
-    // Удаление из избранных
     @Insert(entity = FavoritesTrackData::class, onConflict = OnConflictStrategy.IGNORE)
     fun addToFavorites(trackData: JamendoTrackData)
 

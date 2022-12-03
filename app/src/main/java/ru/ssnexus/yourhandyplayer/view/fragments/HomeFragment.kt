@@ -41,11 +41,11 @@ class HomeFragment : Fragment() {
         //Используем backing field
         set(value) {
             //Если пришло другое значение, то кладем его в переменную
-            if(field != value){
+//            if(field != value){
                 field = value
                 //Обновляем RV адаптер
                 tracksAdapter.addItems(field)
-            }
+//            }
         }
 
     private val autoDisposable = AutoDisposable()
@@ -53,8 +53,6 @@ class HomeFragment : Fragment() {
     private val viewModel by lazy {
         ViewModelProvider.NewInstanceFactory().create(HomeFragmentViewModel::class.java)
     }
-
-    private val scope = CoroutineScope(Dispatchers.IO)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -80,7 +78,6 @@ class HomeFragment : Fragment() {
 
         (requireActivity() as MainActivity).title = "Home page"
 
-
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -91,16 +88,6 @@ class HomeFragment : Fragment() {
         super.onResume()
         Timber.d("OnResume")
         (requireActivity() as MainActivity).isHomeFragment(true)
-        if(viewModel.getMusicMode() == PreferenceProvider.FAVORITES_MODE) {
-            binding.musicModeTview.text = "FAVORITES"
-            binding.musicModeButton.setImageResource(R.drawable.ic_baseline_favorite_24)
-            tracksDataBase = viewModel.favoritesTracksData.blockingFirst()
-        }
-        else {
-            binding.musicModeTview.text = viewModel.getTagsPreferences()
-            binding.musicModeButton.setImageResource(R.drawable.ic_round_numbers_24)
-            tracksDataBase = viewModel.tracksData.blockingFirst()
-        }
     }
 
     override fun onStop() {
@@ -136,7 +123,7 @@ class HomeFragment : Fragment() {
         }
 
         if ((requireActivity() as MainActivity).handyMediaPlayer != null) {
-            (requireActivity() as MainActivity).handyMediaPlayer!!.let {
+            (requireActivity() as MainActivity).handyMediaPlayer?.let {
                 it.playIconState.observe (viewLifecycleOwner){
                         if (it) {
                             binding.playButton.setIconResource(R.drawable.ic_baseline_pause_24)
@@ -155,13 +142,13 @@ class HomeFragment : Fragment() {
                 binding.musicModeTview.text = "FAVORITES"
                 binding.musicModeButton.setImageResource(R.drawable.ic_baseline_favorite_24)
                 tracksDataBase = viewModel.favoritesTracksData.blockingFirst()
-
             }
             else {
                 binding.musicModeTview.text = viewModel.getTagsPreferences()
                 binding.musicModeButton.setImageResource(R.drawable.ic_round_numbers_24)
                 tracksDataBase = viewModel.tracksData.blockingFirst()
             }
+            (requireActivity() as MainActivity).handyMediaPlayer?.setTrackList(tracksDataBase)
         })
 
     }
@@ -234,20 +221,20 @@ class HomeFragment : Fragment() {
             tracksAdapter.registerAdapterDataObserver(object : RecyclerView.AdapterDataObserver(){
                 override fun onChanged() {
                     super.onChanged()
-//                    if ((requireActivity() as MainActivity).getHandyMedialayer() != null) {
-//                        var pos = (requireActivity() as MainActivity).getHandyMedialayer()?.getCurrTrackPos()?:0
-//                        if(pos >= 0) binding.mainRecycler.scrollToPosition(pos)
-//
-//                        val lManager = layoutManager
-//                        if (lManager is LinearLayoutManager)
-//                        {
-//                            if(lManager.findLastCompletelyVisibleItemPosition() >= lManager.itemCount - 2)
-//                            {
-//                                //Делаем новый запрос трэков на сервер
-//                                viewModel.getNextTracks()
-//                            }
-//                        }
-//                    }
+                    if ((requireActivity() as MainActivity).getHandyMedialayer() != null) {
+                        var pos = (requireActivity() as MainActivity).getHandyMedialayer()?.getCurrTrackPos()?:0
+                        if(pos >= 0) binding.mainRecycler.scrollToPosition(pos)
+
+                        val lManager = layoutManager
+                        if (lManager is LinearLayoutManager)
+                        {
+                            if(lManager.findLastCompletelyVisibleItemPosition() >= lManager.itemCount - 2)
+                            {
+                                //Делаем новый запрос трэков на сервер
+                                viewModel.getNextTracks()
+                            }
+                        }
+                    }
                 }
             })
 
@@ -270,16 +257,20 @@ class HomeFragment : Fragment() {
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe{tracks_data ->
                     if(isAdded)
-                        if(viewModel.getMusicMode() == PreferenceProvider.TAGS_MODE)
+                        if(viewModel.getMusicMode() == PreferenceProvider.TAGS_MODE){
                             tracksDataBase = tracks_data
+                            (requireActivity() as MainActivity).handyMediaPlayer?.setTrackList(tracksDataBase)
+                        }
                 }.addTo(autoDisposable)
 
             viewModel.favoritesTracksData.subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe{fav_tracks_data ->
                     if(isAdded)
-                        if(viewModel.getMusicMode() == PreferenceProvider.FAVORITES_MODE)
+                        if(viewModel.getMusicMode() == PreferenceProvider.FAVORITES_MODE) {
                             tracksDataBase = fav_tracks_data
+                            (requireActivity() as MainActivity).handyMediaPlayer?.setTrackList(tracksDataBase)
+                        }
                 }.addTo(autoDisposable)
 
             viewModel.showProgressBar

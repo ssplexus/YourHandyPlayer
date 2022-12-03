@@ -10,7 +10,6 @@ import kotlinx.android.parcel.Parcelize
 @Parcelize
 @Entity(tableName = "favorites", indices = [Index(value = ["id"], unique = true)])
 data class FavoritesTrackData(
-    //@PrimaryKey(autoGenerate = false) val mid: Int = 0,
     @PrimaryKey(autoGenerate = true) val mid: Int = 0,
     @ColumnInfo(name = "album_id") val album_id: Int,
     @ColumnInfo(name = "album_image") val album_image: String,

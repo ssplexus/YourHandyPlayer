@@ -3,6 +3,7 @@ package ru.ssnexus.database_module.data
 import io.reactivex.rxjava3.core.Observable
 import ru.ssnexus.database_module.data.DAO.TrackDao
 import ru.ssnexus.database_module.data.entity.JamendoTrackData
+import timber.log.Timber
 
 class MainRepository(private val trackDao: TrackDao) {
 
@@ -43,10 +44,12 @@ class MainRepository(private val trackDao: TrackDao) {
     fun getSize() : Int = trackDao.getSize()
 
     fun clearTrackDataCache()    {
+        Timber.d("clearTrackDataCache")
         trackDao.nukeTracksData()
     }
 
     fun clearFavoritesTrackDataCache()    {
+        Timber.d("clearFavoritesTrackDataCache")
         trackDao.nukeFavoritesTracksData()
     }
 }

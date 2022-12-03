@@ -149,21 +149,23 @@ class PListFragment : Fragment() {
             setOnTouchListener { view, motionEvent ->
                 if (motionEvent.action == android.view.MotionEvent.ACTION_UP) {
                     if(isEmpty()) return@setOnTouchListener false
-                        val lManager = layoutManager
-                        if (lManager is LinearLayoutManager)
+                    if(viewModel.interactor.getMusicModeFromPreferences() != PreferenceProvider.TAGS_MODE) return@setOnTouchListener false
+                    val lManager = layoutManager
+                    if (lManager is LinearLayoutManager)
+                    {
+                        Timber.d("Swipe up!" + lManager.findLastCompletelyVisibleItemPosition() + " " + lManager.itemCount )
+                        if(lManager.findLastCompletelyVisibleItemPosition() >= lManager.itemCount - 5)
                         {
-                            Timber.d("Swipe up!" + lManager.findLastCompletelyVisibleItemPosition() + " " + lManager.itemCount )
-                            if(lManager.findLastCompletelyVisibleItemPosition() >= lManager.itemCount - 10)
-                            {
-                                //binding.pullToRefresh.isRefreshing = true
+                            //binding.pullToRefresh.isRefreshing = true
 
-                                //Делаем новый запрос трэков на сервер
-                                viewModel.getNextTracks()
+                            //Делаем новый запрос трэков на сервер
 
-                                //Убираем крутящиеся колечко
-                               // binding.pullToRefresh.isRefreshing = false
-                            }
+                            viewModel.getNextTracks()
+
+                            //Убираем крутящиеся колечко
+                           // binding.pullToRefresh.isRefreshing = false
                         }
+                    }
                 }
                 return@setOnTouchListener false
             }
