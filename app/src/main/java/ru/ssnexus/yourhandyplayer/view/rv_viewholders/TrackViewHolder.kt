@@ -44,14 +44,19 @@ class TrackViewHolder(val binding: TrackItemBinding) : RecyclerView.ViewHolder(b
         fav_btn.setOnClickListener {
             MainScope().launch {
                 scope.async {
-                    if (!interactor.isInFavorites(track)) {
+                    if (!interactor.isInFavorites(track))
                         fav_btn.setImageResource(R.drawable.ic_baseline_favorite_24)
-                        interactor.addToFavorites(track)
-                    }
-                    else {
+                    else
                         fav_btn.setImageResource(R.drawable.ic_baseline_favorite_border_24)
-                        interactor.removeFromFavorites(track.id)
-                    }
+
+//                    if (!interactor.isInFavorites(track)) {
+//                        fav_btn.setImageResource(R.drawable.ic_baseline_favorite_24)
+//                        interactor.addToFavorites(track)
+//                    }
+//                    else {
+//                        fav_btn.setImageResource(R.drawable.ic_baseline_favorite_border_24)
+//                        interactor.removeFromFavorites(track.id)
+//                    }
                 }
             }
         }

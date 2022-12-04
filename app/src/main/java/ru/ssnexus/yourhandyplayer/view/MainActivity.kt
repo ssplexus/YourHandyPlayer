@@ -1,13 +1,12 @@
 package ru.ssnexus.yourhandyplayer.view
 
 import android.os.Bundle
-import android.util.TypedValue
 import android.view.View
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.MutableLiveData
 import com.bumptech.glide.Glide
-import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.schedulers.Schedulers
 import io.reactivex.rxjava3.subjects.BehaviorSubject
 import kotlinx.coroutines.CoroutineScope
@@ -16,6 +15,7 @@ import kotlinx.coroutines.launch
 import ru.ssnexus.database_module.data.entity.JamendoTrackData
 import ru.ssnexus.yourhandyplayer.App
 import ru.ssnexus.yourhandyplayer.R
+import ru.ssnexus.yourhandyplayer.data.preferences.PreferenceProvider
 import ru.ssnexus.yourhandyplayer.databinding.ActivityMainBinding
 import ru.ssnexus.yourhandyplayer.domain.Interactor
 import ru.ssnexus.yourhandyplayer.mediaplayer.HandyMediaPlayer
@@ -36,21 +36,27 @@ class MainActivity : AppCompatActivity() {
 
     var handyMediaPlayer: HandyMediaPlayer? = null
 
+    private lateinit var tracksLiveData : MutableLiveData<List<JamendoTrackData>>
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         binding = ActivityMainBinding.inflate(layoutInflater)
         //Передаем его в метод
         setContentView(binding.root)
-        autoDisposable.bindTo(lifecycle)
-
+        autoDisposable.bindTo(this.lifecycle)
         App.instance.dagger.inject(this)
 
         CoroutineScope(Dispatchers.IO).launch {
             interactor.clearTrackDataCache()
-            interactor.clearFavoritesTrackDataCache()
         }
+        interactor.initDataObservers(autoDisposable)
+
+        tracksLiveData = interactor.getTracksLiveData()
+
 //        interactor.getTracksByTagsFromApi()
+        if(interactor.getMusicModeFromPreferences() == PreferenceProvider.TAGS_MODE)
+            interactor.getTracksByTagsFromApi()
         initPlayer()
 
         //Запускаем фрагмент при старте
@@ -147,7 +153,7 @@ class MainActivity : AppCompatActivity() {
         handyMediaPlayer = HandyMediaPlayer(interactor)
         if (handyMediaPlayer != null) {
             binding.trackControl.setOnClickListener(handyMediaPlayer!!.onClickListener)
-            handyMediaPlayer!!.playIconState.observe(this){
+            handyMediaPlayer?.playIconState?.observe(this){
                 if (it) {
                     binding.trackControl.setImageResource(R.drawable.ic_baseline_stop_24)
                 } else {
@@ -155,14 +161,21 @@ class MainActivity : AppCompatActivity() {
                     binding.trackControl.setImageResource(R.drawable.ic_baseline_play_arrow_24)
                 }
             }
+
+            tracksLiveData.observe(this){
+                handyMediaPlayer?.setTrackList(it)
+            }
         }
     }
 
     fun setBottomNavigationTrack(track: JamendoTrackData){
 
         Timber.d("setBottomNavigationTrack")
-        binding.bottomNavigation.visibility = View.VISIBLE
-        binding.bottomNavigation.layoutParams.height = resources.getDimension(R.dimen.toolbar_max_height).toInt()
+        if(handyMediaPlayer?.isPlaying() == true){
+            binding.bottomNavigation.visibility = View.VISIBLE
+            binding.bottomNavigation.layoutParams.height = resources.getDimension(R.dimen.toolbar_max_height).toInt()
+        }
+
         binding.trackTitle.text = track.name
 
         Glide.with(binding.bottomNavigation)

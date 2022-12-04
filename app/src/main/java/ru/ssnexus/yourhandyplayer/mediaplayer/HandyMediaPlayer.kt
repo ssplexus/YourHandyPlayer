@@ -5,6 +5,8 @@ import android.media.MediaPlayer
 import android.os.Handler
 import android.util.TypedValue
 import android.view.View
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.MutableLiveData
 import com.bumptech.glide.Glide
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
@@ -23,9 +25,6 @@ import kotlin.concurrent.scheduleAtFixedRate
 
 class HandyMediaPlayer (val interactor: Interactor) {
 
-    //Отслеживание базы данных
-//    var tracksData: Observable<List<JamendoTrackData>>
-
     var playIconState: MutableLiveData<Boolean> = MutableLiveData()
     var progress: MutableLiveData<Int> = MutableLiveData()
     var bufferingLevel: MutableLiveData<Int> = MutableLiveData()
@@ -43,12 +42,14 @@ class HandyMediaPlayer (val interactor: Interactor) {
 
 
     init {
+
 //        tracksData = interactor.getTracksDataObservable()
 //        tracksData.subscribeOn(Schedulers.io())
 //            .observeOn(AndroidSchedulers.mainThread())
 //            .subscribe{tracks_data ->
 //                trackList = tracks_data
 //            }
+
         initPlayer()
     }
 

@@ -9,21 +9,16 @@ class MainRepository(private val trackDao: TrackDao) {
 
     fun getTracksDataObservable() : Observable<List<JamendoTrackData>> = trackDao.getCachedTracksObservable()
     fun getFavoritesTracksDataObservable() : Observable<List<JamendoTrackData>> = trackDao.getCachedFavoritesTracksObservable()
+    fun getListenLaterTracksDataObservable() : Observable<List<JamendoTrackData>> = trackDao.getCachedListenLaterTracksObservable()
 
     fun getTracksData() : List<JamendoTrackData> = trackDao.getCachedTracks()
     fun getFavoritesTracksData() : List<JamendoTrackData> = trackDao.getCachedFavoritesTracks()
+    fun getListenLaterTracksData() : List<JamendoTrackData> = trackDao.getCachedListenLaterTracks()
 
     fun putToDb(list: List<JamendoTrackData>) {
         //Запросы в БД должны быть в отдельном потоке
         trackDao.insertAll(list)
     }
-
-    fun putToFavoritesDb(list: List<JamendoTrackData>) {
-        //Запросы в БД должны быть в отдельном потоке
-        trackDao.insertAll(list)
-    }
-
-    fun getTrackFavStateById(id : Int) : Int = trackDao.getFavStateById(id)
 
     fun updateTrackFavStateById(id : Int){
         trackDao.updateFavoriteById(id)
@@ -31,15 +26,11 @@ class MainRepository(private val trackDao: TrackDao) {
 
     fun isInFavorites(id: Int) = trackDao.isInFavorites(id) > 0
 
-    fun addToFavorites (trackData: JamendoTrackData) {
-        trackDao.addToFavorites(trackData)
-    }
+    fun isInListenLater(id: Int) = trackDao.isInListenLater(id) > 0
 
-    fun removeFromFavorites(id: Int) {
-        trackDao.removeFormFavorites(id)
-    }
+    fun getTrackFavStateById(id : Int) : Int = trackDao.getFavStateById(id)
 
-//    fun getAllFromDB(): Observable<List<Track>> = trackDao.getTracks()
+    fun getTrackListenLaterStateById(id : Int) : Int = trackDao.getTrackListenLaterStateById(id)
 
     fun getSize() : Int = trackDao.getSize()
 
@@ -48,8 +39,4 @@ class MainRepository(private val trackDao: TrackDao) {
         trackDao.nukeTracksData()
     }
 
-    fun clearFavoritesTrackDataCache()    {
-        Timber.d("clearFavoritesTrackDataCache")
-        trackDao.nukeFavoritesTracksData()
-    }
 }

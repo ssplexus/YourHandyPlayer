@@ -59,7 +59,6 @@ class TrackListRecyclerAdapter(private val clickListener: OnItemClickListener) :
         }
     }
 
-
     //Метод для добавления объектов в наш список
     fun addItems(list: List<JamendoTrackData>) {
         Timber.d("addItems")

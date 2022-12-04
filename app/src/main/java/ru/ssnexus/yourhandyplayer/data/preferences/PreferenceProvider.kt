@@ -38,14 +38,35 @@ class PreferenceProvider(context: Context) {
 
     //Поменять режим
     fun changeMode() {
-        if(getMode() == TAGS_MODE) {
-            preference.edit { putString(KEY_MODE, FAVORITES_MODE) }
-            modePropertyLiveData.postValue(FAVORITES_MODE)
+        when(getMode()){
+            TAGS_MODE -> {
+                preference.edit { putString(KEY_MODE, FAVORITES_MODE) }
+                modePropertyLiveData.postValue(FAVORITES_MODE)
+            }
+            FAVORITES_MODE -> {
+                preference.edit { putString(KEY_MODE, TAGS_MODE) }
+                modePropertyLiveData.postValue(TAGS_MODE)
+            }
+            else -> {
+                preference.edit { putString(KEY_MODE, LISTEN_LATER_MODE) }
+                modePropertyLiveData.postValue(LISTEN_LATER_MODE)
+            }
         }
-        else{
-            preference.edit { putString(KEY_MODE, TAGS_MODE) }
-            modePropertyLiveData.postValue(TAGS_MODE)
-        }
+    }
+
+    fun setTagsMode() {
+        preference.edit { putString(KEY_MODE, TAGS_MODE) }
+        modePropertyLiveData.postValue(TAGS_MODE)
+    }
+
+    fun setFavoritesMode() {
+        preference.edit { putString(KEY_MODE, FAVORITES_MODE) }
+        modePropertyLiveData.postValue(FAVORITES_MODE)
+    }
+
+    fun setLISTENLater() {
+        preference.edit { putString(KEY_MODE, LISTEN_LATER_MODE) }
+        modePropertyLiveData.postValue(LISTEN_LATER_MODE)
     }
 
     //Получить режим
@@ -67,6 +88,7 @@ class PreferenceProvider(context: Context) {
         const val DEFAULT_MODE = "tags_mode"
         const val TAGS_MODE = "tags_mode"
         const val FAVORITES_MODE = "fav_mode"
+        const val LISTEN_LATER_MODE = "LISTEN_later_mode"
         const val KEY_FIRST_LAUNCH_TIME = "first_launch_time"
     }
 }
