@@ -26,6 +26,10 @@ class DetailsViewModel : ViewModel() {
         interactor.updateTrackFavState(trackData)
     }
 
+    fun updateTrackListenLaterState(trackData: JamendoTrackData){
+        interactor.updateTrackListenLaterState(trackData)
+    }
+
     suspend fun loadWallpaper(url: String): Bitmap {
         return suspendCoroutine {
             val url = URL(url)

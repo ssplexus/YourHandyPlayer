@@ -16,6 +16,7 @@ import ru.ssnexus.yourhandyplayer.di.modules.remote_module.JamendoApi
 import ru.ssnexus.yourhandyplayer.utils.AutoDisposable
 import ru.ssnexus.yourhandyplayer.utils.Converter
 import ru.ssnexus.yourhandyplayer.utils.addTo
+import ru.ssnexus.yourhandyplayer.view.MainActivity
 import timber.log.Timber
 
 class Interactor(val repo: MainRepository, val retrofitService: JamendoApi, private val preferences: PreferenceProvider) {
@@ -23,29 +24,26 @@ class Interactor(val repo: MainRepository, val retrofitService: JamendoApi, priv
     var progressBarState: BehaviorSubject<Boolean> = BehaviorSubject.create()
 
     private var tracksLiveData =  MutableLiveData<List<JamendoTrackData>>()
+    private val modePropertyLiveData = preferences.modePropertyLiveData
 
-    fun initDataObservers(autoDisposable: AutoDisposable) {
+    fun initDataObservers(main: MainActivity) {
 
         repo.getTracksDataObservable().subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe{
-                if(preferences.getMode() == PreferenceProvider.TAGS_MODE)
                     tracksLiveData.postValue(it)
-            }.addTo(autoDisposable)
+            }.addTo(main.autoDisposable)
 
-        repo.getFavoritesTracksDataObservable().subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe{
-                if(preferences.getMode() == PreferenceProvider.FAVORITES_MODE)
-                    tracksLiveData.postValue(it)
-            }.addTo(autoDisposable)
-
-        repo.getListenLaterTracksDataObservable().subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe{
-                if(preferences.getMode() == PreferenceProvider.LISTEN_LATER_MODE)
-                    tracksLiveData.postValue(it)
-            }.addTo(autoDisposable)
+        modePropertyLiveData.observe(main){
+            CoroutineScope(Dispatchers.IO).launch {
+                clearTrackDataCache()
+                when (it){
+                    PreferenceProvider.TAGS_MODE -> getTracksByTagsFromApi()
+                    PreferenceProvider.FAVORITES_MODE -> repo.putToDb(repo.getCachedFavoriteTracks())
+                    PreferenceProvider.LISTEN_LATER_MODE -> repo.putToDb(repo.getCachedListenLaterTracks())
+                }
+            }
+        }
     }
 
     fun getTracksByTagsFromApi(tags: String = "", offset: Int = -1) {
@@ -88,11 +86,7 @@ class Interactor(val repo: MainRepository, val retrofitService: JamendoApi, priv
     fun getTracksLiveData() = tracksLiveData
 
     fun updateCurrentTracksData() {
-        tracksLiveData.postValue(when (preferences.getMode()){
-            PreferenceProvider.TAGS_MODE -> repo.getTracksDataObservable().blockingFirst()
-            PreferenceProvider.FAVORITES_MODE -> repo.getFavoritesTracksDataObservable().blockingFirst()
-            else -> repo.getListenLaterTracksDataObservable().blockingFirst()
-        })
+        tracksLiveData.postValue(repo.getTracksDataObservable().blockingFirst())
     }
 
     fun getDBSize(): Int {
@@ -114,7 +108,12 @@ class Interactor(val repo: MainRepository, val retrofitService: JamendoApi, priv
         repo.updateTrackFavStateById(trackData.id)
     }
 
-    fun clearTrackDataCache()    {
+    // Обновить состояние "послушать позже" карточки фильма
+    fun updateTrackListenLaterState(trackData: JamendoTrackData){
+        repo.updateTrackListenLaterStateById(trackData.id)
+    }
+
+    fun clearTrackDataCache(){
         repo.clearTrackDataCache()
     }
 
@@ -128,6 +127,18 @@ class Interactor(val repo: MainRepository, val retrofitService: JamendoApi, priv
     fun getMusicModeFromPreferences() = preferences.getMode()
 
     fun getMusicModeLiveDataFromPreferences() = preferences.modePropertyLiveData
+
+    fun setListenLaterPref(){
+        preferences.setListenLaterMode()
+    }
+
+    fun setFavoritesPref(){
+        preferences.setFavoritesMode()
+    }
+
+    fun setTagsPref(){
+        preferences.setTagsMode()
+    }
 
     fun changeMusicMode() = preferences.changeMode()
 

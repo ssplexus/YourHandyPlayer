@@ -8,12 +8,18 @@ package ru.ssnexus.yourhandyplayer
 //import ru.ssnexus.mymoviesearcher.view.notifications.NotificationConstants.CHANNEL_ID
 //import ru.ssnexus.mymoviesearcher.view.notifications.NotificationConstants.CHANNEL_NAME
 import android.app.Application
+import android.app.NotificationChannel
+import android.app.NotificationManager
 import android.content.res.Configuration
+import android.os.Build
 import ru.ssnexus.yourhandyplayer.di.AppComponent
 import ru.ssnexus.yourhandyplayer.di.DaggerAppComponent
 import ru.ssnexus.yourhandyplayer.di.modules.DomainModule
 import ru.ssnexus.yourhandyplayer.di.modules.database_module.DatabaseModule
 import ru.ssnexus.yourhandyplayer.di.modules.remote_module.RemoteModule
+import ru.ssnexus.yourhandyplayer.notifications.NotificationConstants.CHANNEL_DESCRIPTION
+import ru.ssnexus.yourhandyplayer.notifications.NotificationConstants.CHANNEL_ID
+import ru.ssnexus.yourhandyplayer.notifications.NotificationConstants.CHANNEL_NAME
 import timber.log.Timber
 
 class App : Application() {
@@ -31,7 +37,9 @@ class App : Application() {
         }
         instance = this
 
-//        //Создаем компонент
+        createNotificationChannel()
+
+        //Создаем компонент
         dagger = DaggerAppComponent.builder()
             .remoteModule(RemoteModule())
             .databaseModule(DatabaseModule())
@@ -52,19 +60,19 @@ class App : Application() {
         super.onLowMemory()
     }
 
-//    fun createNotificationChannel(){
-//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-//            //Задаем имя, описание и важность канала
-//            //Создаем канал, передав в параметры его ID(строка), имя(строка), важность(константа)
-//            val mChannel = NotificationChannel(CHANNEL_ID, CHANNEL_NAME, NotificationManager.IMPORTANCE_DEFAULT)
-//            //Отдельно задаем описание
-//            mChannel.description = CHANNEL_DESCRIPTION
-//            //Получаем доступ к менеджеру нотификаций
-//            val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
-//            //Регистрируем канал
-//            notificationManager.createNotificationChannel(mChannel)
-//        }
-//    }
+    fun createNotificationChannel(){
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            //Задаем имя, описание и важность канала
+            //Создаем канал, передав в параметры его ID(строка), имя(строка), важность(константа)
+            val mChannel = NotificationChannel(CHANNEL_ID, CHANNEL_NAME, NotificationManager.IMPORTANCE_DEFAULT)
+            //Отдельно задаем описание
+            mChannel.description = CHANNEL_DESCRIPTION
+            //Получаем доступ к менеджеру нотификаций
+            val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+            //Регистрируем канал
+            notificationManager.createNotificationChannel(mChannel)
+        }
+    }
 
     companion object {
         lateinit var instance: App

@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.View
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.edit
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.MutableLiveData
 import com.bumptech.glide.Glide
@@ -30,17 +31,20 @@ class MainActivity : AppCompatActivity() {
 
     @Inject
     lateinit var interactor: Interactor
-
-    private val autoDisposable = AutoDisposable()
     private lateinit var binding: ActivityMainBinding
+    private lateinit var tracksLiveData : MutableLiveData<List<JamendoTrackData>>
+
+    private var isHome = false
+
+    val autoDisposable = AutoDisposable()
 
     var handyMediaPlayer: HandyMediaPlayer? = null
 
-    private lateinit var tracksLiveData : MutableLiveData<List<JamendoTrackData>>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        Timber.d("Main:onCreate")
         binding = ActivityMainBinding.inflate(layoutInflater)
         //Передаем его в метод
         setContentView(binding.root)
@@ -50,21 +54,44 @@ class MainActivity : AppCompatActivity() {
         CoroutineScope(Dispatchers.IO).launch {
             interactor.clearTrackDataCache()
         }
-        interactor.initDataObservers(autoDisposable)
+
+        interactor.initDataObservers(this)
 
         tracksLiveData = interactor.getTracksLiveData()
 
-//        interactor.getTracksByTagsFromApi()
-        if(interactor.getMusicModeFromPreferences() == PreferenceProvider.TAGS_MODE)
-            interactor.getTracksByTagsFromApi()
+        when(interactor.getMusicModeFromPreferences()){
+            PreferenceProvider.TAGS_MODE -> {
+                interactor.setTagsPref()
+            }
+            PreferenceProvider.FAVORITES_MODE -> {
+                interactor.setFavoritesPref()
+            }
+            else -> {
+                interactor.setListenLaterPref()
+            }
+        }
+
         initPlayer()
 
         //Запускаем фрагмент при старте
+
+        if(savedInstanceState == null)
+        {
+            val extras = intent.extras
+            if(extras != null)
+            {
+                val track = extras.get(R.string.parcel_item_track.toString()) as JamendoTrackData
+                handyMediaPlayer?.setTrack(track)
+                launchDetailsFragment(track)
+                return
+            }
+        }
         launchFragment(HomeFragment())
     }
 
     fun isHomeFragment(flag: Boolean){
 
+        isHome = flag
         var actionBar = getSupportActionBar()
         if (actionBar != null)
             if (!flag)
@@ -94,7 +121,7 @@ class MainActivity : AppCompatActivity() {
     fun launchDetailsFragment(track: JamendoTrackData) {
         //Создаем "посылку"
         val bundle = Bundle()
-        //Кладем наш фильм в "посылку"
+        //Кладем наш трек в "посылку"
         bundle.putParcelable(R.string.parcel_item_track.toString(), track)
         //Кладем фрагмент с деталями в перменную
         val fragment = DetailsFragment()
@@ -123,6 +150,7 @@ class MainActivity : AppCompatActivity() {
     override fun onBackPressed() {
         if(supportFragmentManager.backStackEntryCount == 1)
         {
+            if(isHome)
             AlertDialog.Builder(this)
                 .setTitle(R.string.is_exit)
                 .setIcon(R.drawable.ic_round_menu_24)
@@ -144,6 +172,7 @@ class MainActivity : AppCompatActivity() {
 
                 }
                 .show()
+            else launchFragment(HomeFragment())
         }
         else
             super.onBackPressed()

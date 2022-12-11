@@ -1,4 +1,4 @@
-package ru.ssnexus.database_module.data.entity
+package ru.ssnexus.yourhandyplayer.di.modules.database_module.data.entity
 
 import android.os.Parcelable
 import androidx.room.ColumnInfo
@@ -6,12 +6,10 @@ import androidx.room.Entity
 import androidx.room.Index
 import androidx.room.PrimaryKey
 import kotlinx.android.parcel.Parcelize
-import java.sql.Date
-
 
 @Parcelize
-@Entity(tableName = "tracks", indices = [Index(value = ["id"], unique = true)])
-data class JamendoTrackData(
+@Entity(tableName = "later", indices = [Index(value = ["mid"], unique = true)])
+data class ListenLaterTrackData(
     @PrimaryKey(autoGenerate = true) val mid: Int = 0,
     @ColumnInfo(name = "album_id") val album_id: Int,
     @ColumnInfo(name = "album_image") val album_image: String,
@@ -44,7 +42,6 @@ data class JamendoTrackData(
     @ColumnInfo(name = "shorturl") val shorturl: String,
     @ColumnInfo(name = "waveform") val waveform: String,
     @ColumnInfo(name = "fav_state") var fav_state: Int = -1,
-    @ColumnInfo(name = "listen_later_state") var listen_later_state: Int = -1
+    @ColumnInfo(name = "listen_later_state") var listen_later_state: Int = 1
 
 ) : Parcelable
-

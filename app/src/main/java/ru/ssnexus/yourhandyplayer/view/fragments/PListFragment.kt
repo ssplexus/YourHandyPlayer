@@ -92,22 +92,24 @@ class PListFragment : Fragment() {
                 override fun click(track: JamendoTrackData) {
                     (requireActivity() as MainActivity).let {
                         it.handyMediaPlayer?.let { hp ->
+                            hp.setTrack(track, false)
                             it.setBottomNavigationTrack(track)
-                            hp.setTrack(track)
-                            hp.onPlay()
                         }
                     }
                 }
             })
+
             tracksAdapter.registerAdapterDataObserver(object : RecyclerView.AdapterDataObserver(){
                 override fun onChanged() {
                         super.onChanged()
+                        Timber.d("registerAdapterDataObserver: onChange")
                         val main = (requireActivity() as MainActivity)
                         main?.let {
                             var pos = it.getHandyMedialayer()!!.getCurrTrackPos()
                             if(pos >= 0) binding.mainRecycler.scrollToPosition(pos)
                             it.getHandyMedialayer()?.let {hmp->
-                                hmp.getCurrTrackData()?.let { track -> it.setBottomNavigationTrack(track) }
+                                hmp.getCurrTrackData()?.let {
+                                        track -> it.setBottomNavigationTrack(track) }
                             }
                         }
                     }

@@ -42,14 +42,6 @@ class HandyMediaPlayer (val interactor: Interactor) {
 
 
     init {
-
-//        tracksData = interactor.getTracksDataObservable()
-//        tracksData.subscribeOn(Schedulers.io())
-//            .observeOn(AndroidSchedulers.mainThread())
-//            .subscribe{tracks_data ->
-//                trackList = tracks_data
-//            }
-
         initPlayer()
     }
 
@@ -64,18 +56,17 @@ class HandyMediaPlayer (val interactor: Interactor) {
         trackList = list
     }
 
-    fun setTrack(track: JamendoTrackData){
+    fun setTrack(track: JamendoTrackData, async : Boolean = true){
         currTrack = track
         if(currTrack != null) {
             mediaPlayer?.let {
-                if(it.isPlaying){
-                    //isOnPlaying = true
-                    it.stop()
-                } //else isOnPlaying = false
+                if(it.isPlaying) it.stop()
                 it.reset()
                 try{
                     it.setDataSource(currTrack?.audio)
-                    it.prepareAsync()
+                    if (async) it.prepareAsync()
+                          else {it.prepare()
+                        togglePlayPause()}
                 }
                 catch (e: IOException){
                     e.printStackTrace()
@@ -146,6 +137,7 @@ class HandyMediaPlayer (val interactor: Interactor) {
                 playIconState.postValue(false)
             }else{
                 it.start()
+                isOnPlaying = true
                 playIconState.postValue(true)
 
             }
@@ -170,7 +162,7 @@ class HandyMediaPlayer (val interactor: Interactor) {
                 bufferingLevel.postValue(0)
                 duration.postValue(it.duration)
                 onStartTimer()
-                if (isOnPlaying) togglePlayPause()
+//                if (isOnPlaying) togglePlayPause()
             }
             it.setOnCompletionListener {
                 onNextTrack()

@@ -18,7 +18,7 @@ class PreferenceProvider(context: Context) {
     init {
         //Логика для первого запуска приложения, чтобы положить наши настройки,
         //Сюда потом можно добавить и другие настройки
-        //preference.edit().clear().commit()
+//        preference.edit().clear().commit()
         if(preference.getBoolean(KEY_FIRST_LAUNCH, true)) {
             preference.edit { putString(KEY_TAGS, DEFAULT_TAGS) }
             preference.edit { putString(KEY_MODE, DEFAULT_MODE) }
@@ -43,13 +43,13 @@ class PreferenceProvider(context: Context) {
                 preference.edit { putString(KEY_MODE, FAVORITES_MODE) }
                 modePropertyLiveData.postValue(FAVORITES_MODE)
             }
-            FAVORITES_MODE -> {
+//            FAVORITES_MODE -> {
+//                preference.edit { putString(KEY_MODE, LISTEN_LATER_MODE) }
+//                modePropertyLiveData.postValue(LISTEN_LATER_MODE)
+//            }
+            else -> {
                 preference.edit { putString(KEY_MODE, TAGS_MODE) }
                 modePropertyLiveData.postValue(TAGS_MODE)
-            }
-            else -> {
-                preference.edit { putString(KEY_MODE, LISTEN_LATER_MODE) }
-                modePropertyLiveData.postValue(LISTEN_LATER_MODE)
             }
         }
     }
@@ -64,7 +64,7 @@ class PreferenceProvider(context: Context) {
         modePropertyLiveData.postValue(FAVORITES_MODE)
     }
 
-    fun setLISTENLater() {
+    fun setListenLaterMode() {
         preference.edit { putString(KEY_MODE, LISTEN_LATER_MODE) }
         modePropertyLiveData.postValue(LISTEN_LATER_MODE)
     }
@@ -88,7 +88,7 @@ class PreferenceProvider(context: Context) {
         const val DEFAULT_MODE = "tags_mode"
         const val TAGS_MODE = "tags_mode"
         const val FAVORITES_MODE = "fav_mode"
-        const val LISTEN_LATER_MODE = "LISTEN_later_mode"
+        const val LISTEN_LATER_MODE = "listen_later_mode"
         const val KEY_FIRST_LAUNCH_TIME = "first_launch_time"
     }
 }

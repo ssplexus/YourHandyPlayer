@@ -6,6 +6,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.SeekBar
+import androidx.core.content.edit
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
@@ -93,7 +94,8 @@ class HomeFragment : Fragment() {
 
     private fun initButtons(){
         binding.musicModeTview.setOnClickListener {
-            (requireActivity() as MainActivity).launchFragment(TagsSetFragment())
+            if(viewModel.interactor.getMusicModeFromPreferences() == PreferenceProvider.TAGS_MODE)
+                (requireActivity() as MainActivity).launchFragment(TagsSetFragment())
         }
         binding.musicListButton.setOnClickListener {
             (requireActivity() as MainActivity).launchFragment(PListFragment())
@@ -121,38 +123,52 @@ class HomeFragment : Fragment() {
         if ((requireActivity() as MainActivity).handyMediaPlayer != null) {
             (requireActivity() as MainActivity).handyMediaPlayer?.let {
                 it.playIconState.observe (viewLifecycleOwner){
-                        if (it) {
-                            binding.playButton.setIconResource(R.drawable.ic_baseline_pause_24)
-                        } else {
-                            binding.playButton.setIconResource(R.drawable.ic_baseline_play_arrow_24)
+                    if (it) {
+                        binding.playButton.setIconResource(R.drawable.ic_baseline_pause_24)
+                    } else {
+                        binding.playButton.setIconResource(R.drawable.ic_baseline_play_arrow_24)
 
-                        }
+                    }
                 }
             }
         }
 
         viewModel.modePropertyLiveData.observe(viewLifecycleOwner, Observer<String> {
-            Timber.d("modePropertyLifeData " + it)
+            Timber.d("modePropertyLiveData " + it)
 
-            if(it == PreferenceProvider.FAVORITES_MODE) {
-                binding.musicModeTview.text = "FAVORITES"
-                binding.musicModeButton.setImageResource(R.drawable.ic_baseline_favorite_24)
+            when(it){
+                PreferenceProvider.TAGS_MODE -> {
+                    binding.musicModeTview.text = viewModel.getTagsPreferences()
+                    binding.musicModeButton.setImageResource(R.drawable.ic_round_numbers_24)
+                }
+                PreferenceProvider.FAVORITES_MODE -> {
+                    binding.musicModeTview.text = resources.getText(R.string.favorites_cap)
+                    binding.musicModeButton.setImageResource(R.drawable.ic_baseline_favorite_24)
+                }
+                else -> {
+                    binding.musicModeTview.text = resources.getText(R.string.listen_later_cap)
+                    binding.musicModeButton.setImageResource(R.drawable.ic_baseline_watch_later_24)
+                }
             }
-            else {
+        })
+    }
+
+    fun initForm(){
+        when(viewModel.interactor.getMusicModeFromPreferences()){
+            PreferenceProvider.TAGS_MODE -> {
                 binding.musicModeTview.text = viewModel.getTagsPreferences()
                 binding.musicModeButton.setImageResource(R.drawable.ic_round_numbers_24)
             }
-            viewModel.interactor.updateCurrentTracksData()
-        })
-        if(viewModel.getMusicMode() == PreferenceProvider.FAVORITES_MODE) {
-            binding.musicModeTview.text = "FAVORITES"
-            binding.musicModeButton.setImageResource(R.drawable.ic_baseline_favorite_24)
+            PreferenceProvider.FAVORITES_MODE -> {
+                binding.musicModeTview.text = resources.getText(R.string.favorites_cap)
+                binding.musicModeButton.setImageResource(R.drawable.ic_baseline_favorite_24)
+            }
+            else -> {
+                binding.musicModeTview.text = resources.getText(R.string.listen_later_cap)
+                binding.musicModeButton.setImageResource(R.drawable.ic_baseline_watch_later_24)
+            }
         }
-        else {
-            binding.musicModeTview.text = viewModel.getTagsPreferences()
-            binding.musicModeButton.setImageResource(R.drawable.ic_round_numbers_24)
-        }
-
+        viewModel.interactor.updateCurrentTracksData()
     }
 
     private fun initSeekBar(){
@@ -232,7 +248,7 @@ class HomeFragment : Fragment() {
                         val lManager = layoutManager
                         if (lManager is LinearLayoutManager)
                         {
-                            if(lManager.findLastCompletelyVisibleItemPosition() >= lManager.itemCount - 2)
+                            if(lManager.findLastCompletelyVisibleItemPosition() >= lManager.itemCount - 1)
                             {
                                 //Делаем новый запрос трэков на сервер
                                 viewModel.getNextTracks()
@@ -248,9 +264,9 @@ class HomeFragment : Fragment() {
 
             viewModel.tagsPropertyLiveData.observe(viewLifecycleOwner, Observer<String> {
                 if(viewModel.getMusicMode() == PreferenceProvider.TAGS_MODE) {
-                    Timber.d("" + viewModel.getTagsPreferences() + " " + it)
+                    Timber.d("" + binding.musicModeTview.text + " " + it)
 
-                    if(!it.equals(viewModel.getTagsPreferences())){
+                    if(!it.equals(binding.musicModeTview.text)){
                         binding.musicModeTview.text = it
                         viewModel.updateTracks(it)
                     }
@@ -260,6 +276,7 @@ class HomeFragment : Fragment() {
             viewModel.tracksLiveData.observe(viewLifecycleOwner){
                 Timber.d("Home Data!!!")
                     if(isAdded) {
+                        binding.seekBar.visibility = if (it.size > 0) View.VISIBLE else View.INVISIBLE
                         tracksDataBase = it
                     }
             }

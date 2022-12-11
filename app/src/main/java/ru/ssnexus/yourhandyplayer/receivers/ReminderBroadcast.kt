@@ -8,6 +8,7 @@ import ru.ssnexus.database_module.data.entity.JamendoTrackData
 import ru.ssnexus.yourhandyplayer.App
 import ru.ssnexus.yourhandyplayer.domain.Interactor
 import ru.ssnexus.yourhandyplayer.notifications.NotificationConstants
+import ru.ssnexus.yourhandyplayer.notifications.NotificationHelper
 import javax.inject.Inject
 
 class ReminderBroadcast : BroadcastReceiver() {
@@ -27,12 +28,12 @@ class ReminderBroadcast : BroadcastReceiver() {
         val bundle = intent?.getBundleExtra(NotificationConstants.TRACK_BUNDLE_KEY)
         val track: JamendoTrackData = bundle?.get(NotificationConstants.TRACK_KEY) as JamendoTrackData
 
-//        NotificationHelper.createNotification(context!!, track)
-//        MainScope().launch {
-//            scope.async {
-//                interactor.updateFilmWatchLaterState(film)
-//            }
-//        }
+        NotificationHelper.createNotification(context!!, track)
+        MainScope().launch {
+            scope.async {
+                interactor.updateTrackListenLaterState(track)
+            }
+        }
 
     }
 }

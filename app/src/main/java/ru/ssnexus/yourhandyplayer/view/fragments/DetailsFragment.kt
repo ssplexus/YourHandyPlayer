@@ -15,6 +15,7 @@ import ru.ssnexus.database_module.data.entity.JamendoTrackData
 import ru.ssnexus.yourhandyplayer.R
 import ru.ssnexus.yourhandyplayer.databinding.FragmentDetailsBinding
 import ru.ssnexus.yourhandyplayer.databinding.FragmentHomeBinding
+import ru.ssnexus.yourhandyplayer.notifications.NotificationHelper
 import ru.ssnexus.yourhandyplayer.utils.AutoDisposable
 import ru.ssnexus.yourhandyplayer.view.MainActivity
 import ru.ssnexus.yourhandyplayer.viewmodel.DetailsViewModel
@@ -107,6 +108,14 @@ class DetailsFragment : Fragment() {
             }
         }
 
+        binding.detailsFabLater.setOnClickListener {
+            MainScope().launch {
+                val job = scope.async {
+                    viewModel.updateTrackListenLaterState(track)
+                }
+            }
+            NotificationHelper.notificationSet(requireContext(), track)
+        }
 
         binding.detailsFabShare.setOnClickListener {
             (requireActivity() as MainActivity).handyMediaPlayer?.let {
@@ -128,8 +137,6 @@ class DetailsFragment : Fragment() {
                 startActivity(Intent.createChooser(intent, "Share To:"))
             }
         }
-
-
 
 //        binding.detailsFabDownloadWp.setOnClickListener {
 //            performAsyncLoadOfPoster()

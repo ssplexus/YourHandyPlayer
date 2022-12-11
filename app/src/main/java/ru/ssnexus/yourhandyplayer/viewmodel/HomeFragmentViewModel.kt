@@ -10,6 +10,7 @@ import kotlinx.coroutines.launch
 import ru.ssnexus.database_module.data.entity.JamendoTrackData
 import ru.ssnexus.yourhandyplayer.App
 import ru.ssnexus.yourhandyplayer.domain.Interactor
+import ru.ssnexus.yourhandyplayer.utils.SingleLiveEvent
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -18,7 +19,7 @@ class HomeFragmentViewModel : ViewModel(){
     //Отслеживание базы данных
     var tracksLiveData: MutableLiveData<List<JamendoTrackData>>
 
-    val tagsPropertyLiveData: MutableLiveData<String> = MutableLiveData()
+    val tagsPropertyLiveData = SingleLiveEvent<String>()
     val modePropertyLiveData: MutableLiveData<String>
     //Отслеживание данных состояния прогрессбара
     val showProgressBar: BehaviorSubject<Boolean>

@@ -35,7 +35,7 @@ object NotificationHelper {
             PendingIntent.getActivity(context, 0, mIntent, PendingIntent.FLAG_UPDATE_CURRENT)
         val builder = NotificationCompat.Builder(context!!, NotificationConstants.CHANNEL_ID).apply {
             setSmallIcon(R.drawable.ic_baseline_watch_later_24)
-            setContentTitle(context.resources.getString(R.string.watch_later))
+            setContentTitle(context.resources.getString(R.string.listen_later))
             setContentText(jamendoTrackData.name)
             priority = NotificationCompat.PRIORITY_DEFAULT
             setContentIntent(pendingIntent)
@@ -88,7 +88,7 @@ object NotificationHelper {
                         )
                         val dateTimeInMillis = pickedDateTime.timeInMillis
                         //После того, как получим время, вызываем метод, который создаст Alarm
-                        createWatchLaterEvent(context, dateTimeInMillis, jamendoTrackData)
+                        createListenLaterEvent(context, dateTimeInMillis, jamendoTrackData)
                     }
 
                 TimePickerDialog(
@@ -106,7 +106,7 @@ object NotificationHelper {
         ).show()
     }
 
-    private fun createWatchLaterEvent(context: Context, dateTimeInMillis: Long, jamendoTrackData: JamendoTrackData) {
+    private fun createListenLaterEvent(context: Context, dateTimeInMillis: Long, jamendoTrackData: JamendoTrackData) {
         //Получаем доступ к AlarmManager
         val alarmManager =
             context.getSystemService(Context.ALARM_SERVICE) as AlarmManager

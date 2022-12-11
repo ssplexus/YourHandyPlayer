@@ -77,11 +77,8 @@ class TagsSetFragment : Fragment() {
             (requireActivity() as MainActivity).launchFragment(HomeFragment())
         }
 
-        viewModel.tagsPropertyLifeData.observe(viewLifecycleOwner, Observer<String> {
-            tagsProperty = it
-        })
+        viewModel.tagsPropertyLiveData.observe(viewLifecycleOwner, Observer<String> {
 
-        viewModel.tagsPropertyLifeData.observe(viewLifecycleOwner, Observer<String> {
             it.split("+").forEach {tag ->
                 when(tag.trim()) {
                     ROCK_TAG -> binding.rockTag.isChecked = true
