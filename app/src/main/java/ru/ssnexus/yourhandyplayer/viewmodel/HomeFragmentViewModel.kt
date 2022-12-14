@@ -10,17 +10,16 @@ import kotlinx.coroutines.launch
 import ru.ssnexus.database_module.data.entity.JamendoTrackData
 import ru.ssnexus.yourhandyplayer.App
 import ru.ssnexus.yourhandyplayer.domain.Interactor
+import ru.ssnexus.yourhandyplayer.utils.SingleLiveEvent
 import timber.log.Timber
 import javax.inject.Inject
 
 class HomeFragmentViewModel : ViewModel(){
 
     //Отслеживание базы данных
-    var tracksData: Observable<List<JamendoTrackData>>
-    var favoritesTracksData: Observable<List<JamendoTrackData>>
+    var tracksLiveData: MutableLiveData<List<JamendoTrackData>>
 
-
-    val tagsPropertyLiveData: MutableLiveData<String> = MutableLiveData()
+    val tagsPropertyLiveData = SingleLiveEvent<String>()
     val modePropertyLiveData: MutableLiveData<String>
     //Отслеживание данных состояния прогрессбара
     val showProgressBar: BehaviorSubject<Boolean>
@@ -32,17 +31,12 @@ class HomeFragmentViewModel : ViewModel(){
     init {
         App.instance.dagger.inject(this)
 
-        tracksData = interactor.getTracksDataObservable()
-        favoritesTracksData = interactor.getFavoritesTracksDataObservable()
+        tracksLiveData = interactor.getTracksLiveData()
 
         showProgressBar = interactor.progressBarState
 
         tagsPropertyLiveData.value = interactor.getDefaultTagsFromPreferences()
         modePropertyLiveData = interactor.getMusicModeLiveDataFromPreferences()
-    }
-
-    fun refreshData(){
-        tracksData.repeat()
     }
 
     fun getMusicMode() = interactor.getMusicModeFromPreferences()

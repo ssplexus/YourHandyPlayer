@@ -1,11 +1,13 @@
 package ru.ssnexus.yourhandyplayer.di
 
+import android.content.BroadcastReceiver
 import dagger.Component
 import ru.ssnexus.mymoviesearcher.view.rv_viewholders.TrackViewHolder
 import ru.ssnexus.yourhandyplayer.di.modules.DomainModule
 import ru.ssnexus.yourhandyplayer.di.modules.database_module.DatabaseModule
 import ru.ssnexus.yourhandyplayer.di.modules.remote_module.RemoteModule
 import ru.ssnexus.yourhandyplayer.mediaplayer.HandyMediaPlayer
+import ru.ssnexus.yourhandyplayer.receivers.ReminderBroadcast
 import ru.ssnexus.yourhandyplayer.view.MainActivity
 import ru.ssnexus.yourhandyplayer.viewmodel.DetailsViewModel
 import ru.ssnexus.yourhandyplayer.viewmodel.TagsSetViewModel
@@ -31,5 +33,6 @@ interface AppComponent {
     fun inject(tagsSetViewModel: TagsSetViewModel)
     fun inject(detailsViewModel: DetailsViewModel)
     fun inject(trackViewHolder: TrackViewHolder)
+    fun inject(reminder: ReminderBroadcast)
     fun inject(mainActivity: MainActivity)
 }

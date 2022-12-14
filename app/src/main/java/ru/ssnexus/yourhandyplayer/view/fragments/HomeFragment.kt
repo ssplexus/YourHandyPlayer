@@ -6,7 +6,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.SeekBar
-import android.widget.Toast
+import androidx.core.content.edit
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
@@ -15,7 +15,6 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.schedulers.Schedulers
-import kotlinx.coroutines.*
 import ru.ssnexus.database_module.data.entity.JamendoTrackData
 import ru.ssnexus.mymoviesearcher.view.rv_adapters.TopSpacingItemDecoration
 import ru.ssnexus.mymoviesearcher.view.rv_adapters.TrackListRecyclerAdapter
@@ -27,8 +26,6 @@ import ru.ssnexus.yourhandyplayer.utils.addTo
 import ru.ssnexus.yourhandyplayer.view.MainActivity
 import ru.ssnexus.yourhandyplayer.viewmodel.HomeFragmentViewModel
 import timber.log.Timber
-import java.util.concurrent.Executor
-import java.util.concurrent.Executors
 
 
 class HomeFragment : Fragment() {
@@ -41,11 +38,11 @@ class HomeFragment : Fragment() {
         //Используем backing field
         set(value) {
             //Если пришло другое значение, то кладем его в переменную
-            if(field != value){
+//            if(field != value){
                 field = value
                 //Обновляем RV адаптер
                 tracksAdapter.addItems(field)
-            }
+//            }
         }
 
     private val autoDisposable = AutoDisposable()
@@ -53,8 +50,6 @@ class HomeFragment : Fragment() {
     private val viewModel by lazy {
         ViewModelProvider.NewInstanceFactory().create(HomeFragmentViewModel::class.java)
     }
-
-    private val scope = CoroutineScope(Dispatchers.IO)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -80,7 +75,6 @@ class HomeFragment : Fragment() {
 
         (requireActivity() as MainActivity).title = "Home page"
 
-
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -91,16 +85,6 @@ class HomeFragment : Fragment() {
         super.onResume()
         Timber.d("OnResume")
         (requireActivity() as MainActivity).isHomeFragment(true)
-        if(viewModel.getMusicMode() == PreferenceProvider.FAVORITES_MODE) {
-            binding.musicModeTview.text = "FAVORITES"
-            binding.musicModeButton.setImageResource(R.drawable.ic_baseline_favorite_24)
-            tracksDataBase = viewModel.favoritesTracksData.blockingFirst()
-        }
-        else {
-            binding.musicModeTview.text = viewModel.getTagsPreferences()
-            binding.musicModeButton.setImageResource(R.drawable.ic_round_numbers_24)
-            tracksDataBase = viewModel.tracksData.blockingFirst()
-        }
     }
 
     override fun onStop() {
@@ -110,7 +94,8 @@ class HomeFragment : Fragment() {
 
     private fun initButtons(){
         binding.musicModeTview.setOnClickListener {
-            (requireActivity() as MainActivity).launchFragment(TagsSetFragment())
+            if(viewModel.interactor.getMusicModeFromPreferences() == PreferenceProvider.TAGS_MODE)
+                (requireActivity() as MainActivity).launchFragment(TagsSetFragment())
         }
         binding.musicListButton.setOnClickListener {
             (requireActivity() as MainActivity).launchFragment(PListFragment())
@@ -136,34 +121,54 @@ class HomeFragment : Fragment() {
         }
 
         if ((requireActivity() as MainActivity).handyMediaPlayer != null) {
-            (requireActivity() as MainActivity).handyMediaPlayer!!.let {
+            (requireActivity() as MainActivity).handyMediaPlayer?.let {
                 it.playIconState.observe (viewLifecycleOwner){
-                        if (it) {
-                            binding.playButton.setIconResource(R.drawable.ic_baseline_pause_24)
-                        } else {
-                            binding.playButton.setIconResource(R.drawable.ic_baseline_play_arrow_24)
+                    if (it) {
+                        binding.playButton.setIconResource(R.drawable.ic_baseline_pause_24)
+                    } else {
+                        binding.playButton.setIconResource(R.drawable.ic_baseline_play_arrow_24)
 
-                        }
+                    }
                 }
             }
         }
 
         viewModel.modePropertyLiveData.observe(viewLifecycleOwner, Observer<String> {
-            Timber.d("modePropertyLifeData " + it)
+            Timber.d("modePropertyLiveData " + it)
 
-            if(it == PreferenceProvider.FAVORITES_MODE) {
-                binding.musicModeTview.text = "FAVORITES"
-                binding.musicModeButton.setImageResource(R.drawable.ic_baseline_favorite_24)
-                tracksDataBase = viewModel.favoritesTracksData.blockingFirst()
-
-            }
-            else {
-                binding.musicModeTview.text = viewModel.getTagsPreferences()
-                binding.musicModeButton.setImageResource(R.drawable.ic_round_numbers_24)
-                tracksDataBase = viewModel.tracksData.blockingFirst()
+            when(it){
+                PreferenceProvider.TAGS_MODE -> {
+                    binding.musicModeTview.text = viewModel.getTagsPreferences()
+                    binding.musicModeButton.setImageResource(R.drawable.ic_round_numbers_24)
+                }
+                PreferenceProvider.FAVORITES_MODE -> {
+                    binding.musicModeTview.text = resources.getText(R.string.favorites_cap)
+                    binding.musicModeButton.setImageResource(R.drawable.ic_baseline_favorite_24)
+                }
+                else -> {
+                    binding.musicModeTview.text = resources.getText(R.string.listen_later_cap)
+                    binding.musicModeButton.setImageResource(R.drawable.ic_baseline_watch_later_24)
+                }
             }
         })
+    }
 
+    fun initForm(){
+        when(viewModel.interactor.getMusicModeFromPreferences()){
+            PreferenceProvider.TAGS_MODE -> {
+                binding.musicModeTview.text = viewModel.getTagsPreferences()
+                binding.musicModeButton.setImageResource(R.drawable.ic_round_numbers_24)
+            }
+            PreferenceProvider.FAVORITES_MODE -> {
+                binding.musicModeTview.text = resources.getText(R.string.favorites_cap)
+                binding.musicModeButton.setImageResource(R.drawable.ic_baseline_favorite_24)
+            }
+            else -> {
+                binding.musicModeTview.text = resources.getText(R.string.listen_later_cap)
+                binding.musicModeButton.setImageResource(R.drawable.ic_baseline_watch_later_24)
+            }
+        }
+        viewModel.interactor.updateCurrentTracksData()
     }
 
     private fun initSeekBar(){
@@ -234,20 +239,22 @@ class HomeFragment : Fragment() {
             tracksAdapter.registerAdapterDataObserver(object : RecyclerView.AdapterDataObserver(){
                 override fun onChanged() {
                     super.onChanged()
-//                    if ((requireActivity() as MainActivity).getHandyMedialayer() != null) {
-//                        var pos = (requireActivity() as MainActivity).getHandyMedialayer()?.getCurrTrackPos()?:0
-//                        if(pos >= 0) binding.mainRecycler.scrollToPosition(pos)
-//
-//                        val lManager = layoutManager
-//                        if (lManager is LinearLayoutManager)
-//                        {
-//                            if(lManager.findLastCompletelyVisibleItemPosition() >= lManager.itemCount - 2)
-//                            {
-//                                //Делаем новый запрос трэков на сервер
-//                                viewModel.getNextTracks()
-//                            }
-//                        }
-//                    }
+                    if(tracksAdapter.itemCount < 2) return
+                    if ((requireActivity() as MainActivity).getHandyMedialayer() != null) {
+
+                        var pos = (requireActivity() as MainActivity).getHandyMedialayer()?.getCurrTrackPos()?:0
+                        if(pos >= 0) binding.mainRecycler.scrollToPosition(pos)
+
+                        val lManager = layoutManager
+                        if (lManager is LinearLayoutManager)
+                        {
+                            if(lManager.findLastCompletelyVisibleItemPosition() >= lManager.itemCount - 1)
+                            {
+                                //Делаем новый запрос трэков на сервер
+                                viewModel.getNextTracks()
+                            }
+                        }
+                    }
                 }
             })
 
@@ -257,30 +264,22 @@ class HomeFragment : Fragment() {
 
             viewModel.tagsPropertyLiveData.observe(viewLifecycleOwner, Observer<String> {
                 if(viewModel.getMusicMode() == PreferenceProvider.TAGS_MODE) {
-                    Timber.d("" + viewModel.getTagsPreferences() + " " + it)
+                    Timber.d("" + binding.musicModeTview.text + " " + it)
 
-                    if(!it.equals(viewModel.getTagsPreferences())){
+                    if(!it.equals(binding.musicModeTview.text)){
                         binding.musicModeTview.text = it
                         viewModel.updateTracks(it)
                     }
                 }
             })
 
-            viewModel.tracksData.subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe{tracks_data ->
-                    if(isAdded)
-                        if(viewModel.getMusicMode() == PreferenceProvider.TAGS_MODE)
-                            tracksDataBase = tracks_data
-                }.addTo(autoDisposable)
-
-            viewModel.favoritesTracksData.subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe{fav_tracks_data ->
-                    if(isAdded)
-                        if(viewModel.getMusicMode() == PreferenceProvider.FAVORITES_MODE)
-                            tracksDataBase = fav_tracks_data
-                }.addTo(autoDisposable)
+            viewModel.tracksLiveData.observe(viewLifecycleOwner){
+                Timber.d("Home Data!!!")
+                    if(isAdded) {
+                        binding.seekBar.visibility = if (it.size > 0) View.VISIBLE else View.INVISIBLE
+                        tracksDataBase = it
+                    }
+            }
 
             viewModel.showProgressBar
                 .subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())

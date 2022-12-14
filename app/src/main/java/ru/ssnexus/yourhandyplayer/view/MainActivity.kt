@@ -1,13 +1,13 @@
 package ru.ssnexus.yourhandyplayer.view
 
 import android.os.Bundle
-import android.util.TypedValue
 import android.view.View
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.edit
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.MutableLiveData
 import com.bumptech.glide.Glide
-import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.schedulers.Schedulers
 import io.reactivex.rxjava3.subjects.BehaviorSubject
 import kotlinx.coroutines.CoroutineScope
@@ -16,6 +16,7 @@ import kotlinx.coroutines.launch
 import ru.ssnexus.database_module.data.entity.JamendoTrackData
 import ru.ssnexus.yourhandyplayer.App
 import ru.ssnexus.yourhandyplayer.R
+import ru.ssnexus.yourhandyplayer.data.preferences.PreferenceProvider
 import ru.ssnexus.yourhandyplayer.databinding.ActivityMainBinding
 import ru.ssnexus.yourhandyplayer.domain.Interactor
 import ru.ssnexus.yourhandyplayer.mediaplayer.HandyMediaPlayer
@@ -30,35 +31,67 @@ class MainActivity : AppCompatActivity() {
 
     @Inject
     lateinit var interactor: Interactor
-
-    private val autoDisposable = AutoDisposable()
     private lateinit var binding: ActivityMainBinding
+    private lateinit var tracksLiveData : MutableLiveData<List<JamendoTrackData>>
+
+    private var isHome = false
+
+    val autoDisposable = AutoDisposable()
 
     var handyMediaPlayer: HandyMediaPlayer? = null
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        Timber.d("Main:onCreate")
         binding = ActivityMainBinding.inflate(layoutInflater)
         //Передаем его в метод
         setContentView(binding.root)
-        autoDisposable.bindTo(lifecycle)
-
+        autoDisposable.bindTo(this.lifecycle)
         App.instance.dagger.inject(this)
 
         CoroutineScope(Dispatchers.IO).launch {
             interactor.clearTrackDataCache()
-            interactor.clearFavoritesTrackDataCache()
         }
-        interactor.getTracksByTagsFromApi()
+
+        interactor.initDataObservers(this)
+
+        tracksLiveData = interactor.getTracksLiveData()
+
+        when(interactor.getMusicModeFromPreferences()){
+            PreferenceProvider.TAGS_MODE -> {
+                interactor.setTagsPref()
+            }
+            PreferenceProvider.FAVORITES_MODE -> {
+                interactor.setFavoritesPref()
+            }
+            else -> {
+                interactor.setListenLaterPref()
+            }
+        }
+
         initPlayer()
 
         //Запускаем фрагмент при старте
+
+        if(savedInstanceState == null)
+        {
+            val extras = intent.extras
+            if(extras != null)
+            {
+                val track = extras.get(R.string.parcel_item_track.toString()) as JamendoTrackData
+                handyMediaPlayer?.setTrack(track)
+                launchDetailsFragment(track)
+                return
+            }
+        }
         launchFragment(HomeFragment())
     }
 
     fun isHomeFragment(flag: Boolean){
 
+        isHome = flag
         var actionBar = getSupportActionBar()
         if (actionBar != null)
             if (!flag)
@@ -88,7 +121,7 @@ class MainActivity : AppCompatActivity() {
     fun launchDetailsFragment(track: JamendoTrackData) {
         //Создаем "посылку"
         val bundle = Bundle()
-        //Кладем наш фильм в "посылку"
+        //Кладем наш трек в "посылку"
         bundle.putParcelable(R.string.parcel_item_track.toString(), track)
         //Кладем фрагмент с деталями в перменную
         val fragment = DetailsFragment()
@@ -117,6 +150,7 @@ class MainActivity : AppCompatActivity() {
     override fun onBackPressed() {
         if(supportFragmentManager.backStackEntryCount == 1)
         {
+            if(isHome)
             AlertDialog.Builder(this)
                 .setTitle(R.string.is_exit)
                 .setIcon(R.drawable.ic_round_menu_24)
@@ -138,6 +172,7 @@ class MainActivity : AppCompatActivity() {
 
                 }
                 .show()
+            else launchFragment(HomeFragment())
         }
         else
             super.onBackPressed()
@@ -147,7 +182,7 @@ class MainActivity : AppCompatActivity() {
         handyMediaPlayer = HandyMediaPlayer(interactor)
         if (handyMediaPlayer != null) {
             binding.trackControl.setOnClickListener(handyMediaPlayer!!.onClickListener)
-            handyMediaPlayer!!.playIconState.observe(this){
+            handyMediaPlayer?.playIconState?.observe(this){
                 if (it) {
                     binding.trackControl.setImageResource(R.drawable.ic_baseline_stop_24)
                 } else {
@@ -155,14 +190,21 @@ class MainActivity : AppCompatActivity() {
                     binding.trackControl.setImageResource(R.drawable.ic_baseline_play_arrow_24)
                 }
             }
+
+            tracksLiveData.observe(this){
+                handyMediaPlayer?.setTrackList(it)
+            }
         }
     }
 
     fun setBottomNavigationTrack(track: JamendoTrackData){
 
         Timber.d("setBottomNavigationTrack")
-        binding.bottomNavigation.visibility = View.VISIBLE
-        binding.bottomNavigation.layoutParams.height = resources.getDimension(R.dimen.toolbar_max_height).toInt()
+        if(handyMediaPlayer?.isPlaying() == true){
+            binding.bottomNavigation.visibility = View.VISIBLE
+            binding.bottomNavigation.layoutParams.height = resources.getDimension(R.dimen.toolbar_max_height).toInt()
+        }
+
         binding.trackTitle.text = track.name
 
         Glide.with(binding.bottomNavigation)

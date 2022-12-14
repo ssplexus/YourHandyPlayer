@@ -6,14 +6,10 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Switch
 import androidx.lifecycle.Observer
-import ru.ssnexus.yourhandyplayer.R
-import ru.ssnexus.yourhandyplayer.databinding.FragmentPListBinding
 import ru.ssnexus.yourhandyplayer.databinding.FragmentTagsSetBinding
 import ru.ssnexus.yourhandyplayer.utils.AutoDisposable
 import ru.ssnexus.yourhandyplayer.view.MainActivity
-import ru.ssnexus.yourhandyplayer.viewmodel.PListFragmentViewModel
 import ru.ssnexus.yourhandyplayer.viewmodel.TagsSetViewModel
 
 class TagsSetFragment : Fragment() {
@@ -81,11 +77,8 @@ class TagsSetFragment : Fragment() {
             (requireActivity() as MainActivity).launchFragment(HomeFragment())
         }
 
-        viewModel.tagsPropertyLifeData.observe(viewLifecycleOwner, Observer<String> {
-            tagsProperty = it
-        })
+        viewModel.tagsPropertyLiveData.observe(viewLifecycleOwner, Observer<String> {
 
-        viewModel.tagsPropertyLifeData.observe(viewLifecycleOwner, Observer<String> {
             it.split("+").forEach {tag ->
                 when(tag.trim()) {
                     ROCK_TAG -> binding.rockTag.isChecked = true

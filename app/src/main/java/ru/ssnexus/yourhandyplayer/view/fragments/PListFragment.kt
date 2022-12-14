@@ -1,30 +1,22 @@
 package ru.ssnexus.yourhandyplayer.view.fragments
 
-import android.media.AudioManager
-import android.media.MediaPlayer
 import android.os.Bundle
 import android.view.LayoutInflater
-import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.core.view.isEmpty
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.bumptech.glide.Glide
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.schedulers.Schedulers
 import ru.ssnexus.database_module.data.entity.JamendoTrackData
 import ru.ssnexus.mymoviesearcher.view.rv_adapters.TopSpacingItemDecoration
 import ru.ssnexus.mymoviesearcher.view.rv_adapters.TrackListRecyclerAdapter
-import ru.ssnexus.yourhandyplayer.App
 import ru.ssnexus.yourhandyplayer.data.preferences.PreferenceProvider
-import ru.ssnexus.yourhandyplayer.databinding.ActivityMainBinding
 import ru.ssnexus.yourhandyplayer.databinding.FragmentPListBinding
-import ru.ssnexus.yourhandyplayer.di.modules.remote_module.entity.jamendo.JamendoTrack
 import ru.ssnexus.yourhandyplayer.utils.AutoDisposable
 import ru.ssnexus.yourhandyplayer.utils.addTo
 import ru.ssnexus.yourhandyplayer.view.MainActivity
@@ -87,7 +79,7 @@ class PListFragment : Fragment() {
         super.onResume()
         (requireActivity() as MainActivity).let {
             if (it.handyMediaPlayer != null) {
-                if (it.handyMediaPlayer!!.isPlaying() == true) it.bottomNavigationShow(true)
+                if (it.handyMediaPlayer?.isPlaying() == true) it.bottomNavigationShow(true)
             }
             it.isHomeFragment(false)
         }
@@ -100,22 +92,24 @@ class PListFragment : Fragment() {
                 override fun click(track: JamendoTrackData) {
                     (requireActivity() as MainActivity).let {
                         it.handyMediaPlayer?.let { hp ->
+                            hp.setTrack(track, false)
                             it.setBottomNavigationTrack(track)
-                            hp.setTrack(track)
-                            hp.onPlay()
                         }
                     }
                 }
             })
+
             tracksAdapter.registerAdapterDataObserver(object : RecyclerView.AdapterDataObserver(){
                 override fun onChanged() {
                         super.onChanged()
+                        Timber.d("registerAdapterDataObserver: onChange")
                         val main = (requireActivity() as MainActivity)
                         main?.let {
                             var pos = it.getHandyMedialayer()!!.getCurrTrackPos()
                             if(pos >= 0) binding.mainRecycler.scrollToPosition(pos)
                             it.getHandyMedialayer()?.let {hmp->
-                                hmp.getCurrTrackData()?.let { track -> it.setBottomNavigationTrack(track) }
+                                hmp.getCurrTrackData()?.let {
+                                        track -> it.setBottomNavigationTrack(track) }
                             }
                         }
                     }
@@ -129,41 +123,32 @@ class PListFragment : Fragment() {
             val decorator = TopSpacingItemDecoration(8)
             addItemDecoration(decorator)
 
-            viewModel.tracksData.subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe{tracks_data ->
-                    if(isAdded)
-                        if(viewModel.getMusicMode() == PreferenceProvider.TAGS_MODE)
-                            tracksDataBase = tracks_data
-                }.addTo(autoDisposable)
-
-            viewModel.favoritesTracksData.subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe{fav_tracks_data ->
-                    if(isAdded)
-                        if(viewModel.getMusicMode() == PreferenceProvider.FAVORITES_MODE)
-                            tracksDataBase = fav_tracks_data
-                }.addTo(autoDisposable)
+            viewModel.tracksLiveData.observe(viewLifecycleOwner){
+                Timber.d("PList Data!!!")
+                if(isAdded) tracksDataBase = it
+            }
 
             //Делаем refresh на swipe up
             setOnTouchListener { view, motionEvent ->
                 if (motionEvent.action == android.view.MotionEvent.ACTION_UP) {
                     if(isEmpty()) return@setOnTouchListener false
-                        val lManager = layoutManager
-                        if (lManager is LinearLayoutManager)
+                    if(viewModel.interactor.getMusicModeFromPreferences() != PreferenceProvider.TAGS_MODE) return@setOnTouchListener false
+                    val lManager = layoutManager
+                    if (lManager is LinearLayoutManager)
+                    {
+                        Timber.d("Swipe up!" + lManager.findLastCompletelyVisibleItemPosition() + " " + lManager.itemCount )
+                        if(lManager.findLastCompletelyVisibleItemPosition() >= lManager.itemCount - 5)
                         {
-                            Timber.d("Swipe up!" + lManager.findLastCompletelyVisibleItemPosition() + " " + lManager.itemCount )
-                            if(lManager.findLastCompletelyVisibleItemPosition() >= lManager.itemCount - 10)
-                            {
-                                //binding.pullToRefresh.isRefreshing = true
+                            //binding.pullToRefresh.isRefreshing = true
 
-                                //Делаем новый запрос трэков на сервер
-                                viewModel.getNextTracks()
+                            //Делаем новый запрос трэков на сервер
 
-                                //Убираем крутящиеся колечко
-                               // binding.pullToRefresh.isRefreshing = false
-                            }
+                            viewModel.getNextTracks()
+
+                            //Убираем крутящиеся колечко
+                           // binding.pullToRefresh.isRefreshing = false
                         }
+                    }
                 }
                 return@setOnTouchListener false
             }

@@ -11,7 +11,7 @@ class TagsSetViewModel : ViewModel() {
     @Inject
     lateinit var interactor: Interactor
 
-    val tagsPropertyLifeData: MutableLiveData<String> = MutableLiveData()
+    val tagsPropertyLiveData: MutableLiveData<String> = MutableLiveData()
 
     init {
         App.instance.dagger.inject(this)
@@ -25,6 +25,6 @@ class TagsSetViewModel : ViewModel() {
 
     private fun getTagsProperty() {
         //Кладем категорию в LiveData
-        tagsPropertyLifeData.value = interactor.getDefaultTagsFromPreferences()
+        tagsPropertyLiveData.value = interactor.getDefaultTagsFromPreferences()
     }
 }

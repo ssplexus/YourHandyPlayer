@@ -1,5 +1,6 @@
 package ru.ssnexus.yourhandyplayer.viewmodel
 
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.subjects.BehaviorSubject
@@ -12,8 +13,7 @@ import javax.inject.Inject
 
 class PListFragmentViewModel : ViewModel() {
     //Отслеживание базы данных
-    var tracksData: Observable<List<JamendoTrackData>>
-    var favoritesTracksData: Observable<List<JamendoTrackData>>
+    var tracksLiveData: MutableLiveData<List<JamendoTrackData>>
     //Отслеживание данных состояния прогрессбара
     val showProgressBar: BehaviorSubject<Boolean>
     //Инициализируем интерактор
@@ -23,8 +23,7 @@ class PListFragmentViewModel : ViewModel() {
     init {
         App.instance.dagger.inject(this)
 
-        tracksData = interactor.getTracksDataObservable()
-        favoritesTracksData = interactor.getFavoritesTracksDataObservable()
+        tracksLiveData = interactor.getTracksLiveData()
 
         showProgressBar = interactor.progressBarState
     }

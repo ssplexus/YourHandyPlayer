@@ -30,11 +30,15 @@
     <string name="radio_button_playing">В кинотеатрах</string>
     <string name="radio_group_header">Подборка на главном экране:</string>
 
-    <string name="watch_later">Не забудьте посмотреть!</string>
+    <string name="listen_later">Не забудьте послушать!</string>
 
     <string name="permission_storage">Нет разрешения. Пожалуйста, предоставьте разрешение</string>
     <string name="downloaded_to_gallery">"Сохранено в галерею"</string>
     <string name="open">В галерею</string>
 
-    <string name="db_name">film_db</string>
+    <string name="favorites_cap">FAVORITES</string>
+    <string name="listen_later_cap">LISTEN LATER</string>
+
+
+    <string name="db_name">tracks_db</string>
 </resources>

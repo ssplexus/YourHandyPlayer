@@ -8,8 +8,8 @@ import androidx.room.PrimaryKey
 import kotlinx.android.parcel.Parcelize
 
 @Parcelize
-@Entity(tableName = "favorites", indices = [Index(value = ["mid"], unique = true)])
-data class FavoritesTrackData(
+@Entity(tableName = "later", indices = [Index(value = ["mid"], unique = true)])
+data class ListenLaterTrackData(
     @PrimaryKey(autoGenerate = true) val mid: Int = 0,
     @ColumnInfo(name = "album_id") val album_id: Int,
     @ColumnInfo(name = "album_image") val album_image: String,
@@ -41,7 +41,7 @@ data class FavoritesTrackData(
     @ColumnInfo(name = "shareurl") val shareurl: String,
     @ColumnInfo(name = "shorturl") val shorturl: String,
     @ColumnInfo(name = "waveform") val waveform: String,
-    @ColumnInfo(name = "fav_state") var fav_state: Int = 1,
-    @ColumnInfo(name = "listen_later_state") var listen_later_state: Int = -1
+    @ColumnInfo(name = "fav_state") var fav_state: Int = -1,
+    @ColumnInfo(name = "listen_later_state") var listen_later_state: Int = 1
 
 ) : Parcelable

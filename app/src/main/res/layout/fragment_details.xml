@@ -25,6 +25,21 @@
         app:layout_constraintTop_toTopOf="parent"
         />
 
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/details_fab_later"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="10dp"
+        app:borderWidth="1dp"
+        app:backgroundTint="@color/white"
+        android:backgroundTint="@color/blue_100"
+        app:tint="@color/white"
+        app:srcCompat="@drawable/ic_baseline_watch_later_24"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/details_fab_fav"
+        />
+
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/details_fab_download"
         android:layout_width="wrap_content"
@@ -36,7 +51,7 @@
         app:tint="@color/white"
         app:srcCompat="@drawable/ic_baseline_file_download_24"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/details_fab_fav"
+        app:layout_constraintTop_toBottomOf="@id/details_fab_later"
         android:visibility="gone"
         />
 
@@ -62,6 +77,8 @@
         android:scaleType="fitXY"
         app:layout_constraintBottom_toBottomOf="@id/seek_bar"
         app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.0"
+        tools:layout_editor_absoluteX="0dp"
         tools:src="@tools:sample/avatars" />
 
     <com.google.android.material.button.MaterialButton

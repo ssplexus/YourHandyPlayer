@@ -5,6 +5,8 @@ import android.media.MediaPlayer
 import android.os.Handler
 import android.util.TypedValue
 import android.view.View
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.MutableLiveData
 import com.bumptech.glide.Glide
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
@@ -23,9 +25,6 @@ import kotlin.concurrent.scheduleAtFixedRate
 
 class HandyMediaPlayer (val interactor: Interactor) {
 
-    //Отслеживание базы данных
-    var tracksData: Observable<List<JamendoTrackData>>
-
     var playIconState: MutableLiveData<Boolean> = MutableLiveData()
     var progress: MutableLiveData<Int> = MutableLiveData()
     var bufferingLevel: MutableLiveData<Int> = MutableLiveData()
@@ -39,19 +38,10 @@ class HandyMediaPlayer (val interactor: Interactor) {
     private var currTrack: JamendoTrackData? = null
     private var isOnPlaying  = false
 
-    private var runnable: Runnable? = null
-    private val handler: Handler = Handler()
-
     private val timer: Timer = Timer()
 
 
     init {
-        tracksData = interactor.getTracksDataObservable()
-        tracksData.subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe{tracks_data ->
-                trackList = tracks_data
-            }
         initPlayer()
     }
 
@@ -60,23 +50,23 @@ class HandyMediaPlayer (val interactor: Interactor) {
             if (isOnPlaying) progress.postValue(mediaPlayer.currentPosition)
         }
     }
-    fun onStopTimer(){
-        timer.cancel()
-        timer.purge()
+
+    fun setTrackList(list:List<JamendoTrackData>){
+        if (isOnPlaying) togglePlayPause()
+        trackList = list
     }
 
-    fun setTrack(track: JamendoTrackData){
+    fun setTrack(track: JamendoTrackData, async : Boolean = true){
         currTrack = track
         if(currTrack != null) {
             mediaPlayer?.let {
-                if(it.isPlaying){
-                    //isOnPlaying = true
-                    it.stop()
-                } //else isOnPlaying = false
+                if(it.isPlaying) it.stop()
                 it.reset()
                 try{
                     it.setDataSource(currTrack?.audio)
-                    it.prepareAsync()
+                    if (async) it.prepareAsync()
+                          else {it.prepare()
+                        togglePlayPause()}
                 }
                 catch (e: IOException){
                     e.printStackTrace()
@@ -103,6 +93,7 @@ class HandyMediaPlayer (val interactor: Interactor) {
     fun isSetTrack() : Boolean = if(currTrack != null) true else false
 
     fun onPlay() {
+        if(trackList.isEmpty()) return
         if (!isPlaying()) {
             isOnPlaying = true
             if( !isSetTrack()) trackList?.first().let { setTrack(it) }
@@ -146,6 +137,7 @@ class HandyMediaPlayer (val interactor: Interactor) {
                 playIconState.postValue(false)
             }else{
                 it.start()
+                isOnPlaying = true
                 playIconState.postValue(true)
 
             }
@@ -170,7 +162,7 @@ class HandyMediaPlayer (val interactor: Interactor) {
                 bufferingLevel.postValue(0)
                 duration.postValue(it.duration)
                 onStartTimer()
-                if (isOnPlaying) togglePlayPause()
+//                if (isOnPlaying) togglePlayPause()
             }
             it.setOnCompletionListener {
                 onNextTrack()
