@@ -40,7 +40,7 @@
         android:backgroundTint="@color/blue_100"
         android:translationZ="@dimen/homefrag_backward_btn_translationZ"
         app:cornerRadius="@dimen/homefrag_backward_btn_cornerRadius"
-        app:icon="@android:drawable/ic_media_previous"
+        app:icon="@drawable/ic_baseline_skip_previous_24"
         app:iconGravity="textStart"
         app:iconSize="@dimen/homefrag_backward_btn_iconSize"
         app:iconTint="@color/white"
@@ -59,7 +59,7 @@
         android:backgroundTint="@color/blue_100"
         android:translationZ="@dimen/homefrag_forward_btn_translationZ"
         app:cornerRadius="@dimen/homefrag_forward_btn_cornerRadius"
-        app:icon="@android:drawable/ic_media_next"
+        app:icon="@drawable/ic_baseline_skip_next_24"
         app:iconGravity="textStart"
         app:iconPadding="@dimen/homefrag_forward_btn_iconPadding"
         app:iconSize="@dimen/homefrag_forward_btn_iconSize"
@@ -71,6 +71,70 @@
         app:strokeColor="@color/white"
         app:strokeWidth="@dimen/homefrag_forward_strokeWidth" />
 
+
+    <LinearLayout
+        android:id="@+id/buttons_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/play_animation"
+        android:translationZ="@dimen/homefrag_forward_btn_translationZ"
+        android:gravity="center_horizontal">
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/music_mode_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="7dp"
+            android:backgroundTint="@color/blue_100"
+            app:backgroundTint="@color/white"
+            app:borderWidth="2dp"
+            app:fabSize="auto"
+            app:layout_constraintTop_toTopOf="parent"
+            app:srcCompat="@drawable/ic_round_numbers_24"
+            app:tint="@color/white" />
+
+        <TextView
+            android:id="@+id/music_mode_tview"
+            android:layout_width="180dp"
+            android:layout_height="65dp"
+            android:autoSizeTextType="uniform"
+            android:maxLines="3"
+
+            android:text="Choose your mood"
+            android:textAlignment="center"
+            android:textAllCaps="false"
+            android:textColor="@color/white"
+            android:background="@drawable/round_selector_shape"/>
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/music_list_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="7dp"
+            android:backgroundTint="@color/blue_100"
+            app:backgroundTint="@color/white"
+            app:borderWidth="2dp"
+            app:fabSize="auto"
+            app:layout_constraintTop_toTopOf="parent"
+            app:srcCompat="@drawable/ic_round_queue_music_24"
+            app:tint="@color/white" />
+
+    </LinearLayout>
+
+    <ImageView
+        android:id="@+id/play_animation"
+        android:layout_width="wrap_content"
+        android:layout_height="@dimen/play_anim_height"
+        android:layout_gravity="center_horizontal"
+
+        android:src="@drawable/speaker_anim"
+        android:translationZ="@dimen/homefrag_forward_btn_translationZ"
+        app:layout_constraintBottom_toTopOf="@id/play_button"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/buttons_layout" />
+
     <LinearLayout
         android:id="@+id/linearLayout"
         android:layout_width="match_parent"
@@ -81,52 +145,14 @@
         app:layout_constraintTop_toTopOf="parent">
 
         <LinearLayout
+            android:id="@+id/upper_half"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_weight="50"
             android:background="@color/blue_200"
-            android:gravity="center_horizontal"
-            android:paddingTop="80dp">
+            android:orientation="vertical"
+            android:weightSum="100">
 
-
-            <com.google.android.material.floatingactionbutton.FloatingActionButton
-                android:id="@+id/music_mode_button"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_margin="7dp"
-                android:backgroundTint="@color/blue_100"
-                app:backgroundTint="@color/white"
-                app:borderWidth="2dp"
-                app:fabSize="auto"
-                app:layout_constraintTop_toTopOf="parent"
-                app:srcCompat="@drawable/ic_round_numbers_24"
-                app:tint="@color/white" />
-
-            <TextView
-                android:id="@+id/music_mode_tview"
-                android:layout_width="180dp"
-                android:layout_height="65dp"
-                android:autoSizeTextType="uniform"
-                android:maxLines="3"
-                android:paddingHorizontal="15dp"
-                android:text="Choose your mood"
-                android:textAlignment="center"
-                android:textAllCaps="false"
-                android:textColor="@color/white"
-                android:background="@drawable/round_selector_shape"/>
-
-            <com.google.android.material.floatingactionbutton.FloatingActionButton
-                android:id="@+id/music_list_button"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_margin="7dp"
-                android:backgroundTint="@color/blue_100"
-                app:backgroundTint="@color/white"
-                app:borderWidth="2dp"
-                app:fabSize="auto"
-                app:layout_constraintTop_toTopOf="parent"
-                app:srcCompat="@drawable/ic_round_queue_music_24"
-                app:tint="@color/white" />
 
         </LinearLayout>
 
@@ -137,28 +163,152 @@
             android:background="@color/white"
             android:gravity="bottom"
             android:orientation="vertical"
+            android:weightSum="100"
             >
 
-            <TextView
-                android:id="@+id/seek_bar_text"
+            <LinearLayout
+                android:id="@+id/wave_form"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_weight="130"
+                android:paddingHorizontal="50dp"
+                android:paddingBottom="12dp"
+                android:orientation="horizontal"
+                android:weightSum="@integer/wave_sum">
+
+                <ImageView
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/wave_height"
+                    android:maxHeight="@dimen/wave_max_height"
+                    android:minHeight="@dimen/wave_height"
+                    android:background="@drawable/round_shape"
+                    android:layout_gravity="bottom"
+                    android:layout_weight="@integer/wave"/>
+
+                <ImageView
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/wave_height"
+                    android:maxHeight="@dimen/wave_max_height"
+                    android:minHeight="@dimen/wave_height"
+                    android:background="@drawable/round_shape"
+                    android:layout_gravity="bottom"
+                    android:layout_weight="@integer/wave"/>
+
+                <ImageView
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/wave_height"
+                    android:maxHeight="@dimen/wave_max_height"
+                    android:minHeight="@dimen/wave_height"
+                    android:background="@drawable/round_shape"
+                    android:layout_gravity="bottom"
+                    android:layout_weight="@integer/wave"/>
+
+                <ImageView
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/wave_height"
+                    android:maxHeight="@dimen/wave_max_height"
+                    android:minHeight="@dimen/wave_height"
+                    android:background="@drawable/round_shape"
+                    android:layout_gravity="bottom"
+                    android:layout_weight="@integer/wave"/>
+
+                <ImageView
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/wave_height"
+                    android:maxHeight="@dimen/wave_max_height"
+                    android:minHeight="@dimen/wave_height"
+                    android:background="@drawable/round_shape"
+                    android:layout_gravity="bottom"
+                    android:layout_weight="@integer/wave"/>
+
+                <ImageView
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/wave_height"
+                    android:maxHeight="@dimen/wave_max_height"
+                    android:minHeight="@dimen/wave_height"
+                    android:background="@drawable/round_shape"
+                    android:layout_gravity="bottom"
+                    android:layout_weight="@integer/wave"/>
+                <ImageView
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/wave_height"
+                    android:maxHeight="@dimen/wave_max_height"
+                    android:minHeight="@dimen/wave_height"
+                    android:background="@drawable/round_shape"
+                    android:layout_gravity="bottom"
+                    android:layout_weight="@integer/wave"/>
+                <ImageView
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/wave_height"
+                    android:maxHeight="@dimen/wave_max_height"
+                    android:minHeight="@dimen/wave_height"
+                    android:background="@drawable/round_shape"
+                    android:layout_gravity="bottom"
+                    android:layout_weight="@integer/wave"/>
+                <ImageView
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/wave_height"
+                    android:maxHeight="@dimen/wave_max_height"
+                    android:minHeight="@dimen/wave_height"
+                    android:background="@drawable/round_shape"
+                    android:layout_gravity="bottom"
+                    android:layout_weight="@integer/wave"/>
+                <ImageView
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/wave_height"
+                    android:maxHeight="@dimen/wave_max_height"
+                    android:minHeight="@dimen/wave_height"
+                    android:background="@drawable/round_shape"
+                    android:layout_gravity="bottom"
+                    android:layout_weight="@integer/wave"/>
+
+            </LinearLayout>
+
+
+            <LinearLayout
+                android:id="@+id/control_bar_Layout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:paddingHorizontal="6dp"
+                android:orientation="horizontal" >
+                <TextView
+                    android:id="@+id/player_current_time_text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
 
-                />
+                    android:textColor="@color/blue_100"
+                    android:textStyle="bold"
+                    android:textSize="18sp"
+                    android:text="00:00"
+                     />
 
-            <SeekBar
-                android:id="@+id/seek_bar"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:progressDrawable="@drawable/seek_bar"
-                android:thumb="@drawable/seek_thumb"
-                />
+                <SeekBar
+                    android:id="@+id/seek_bar"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:progressDrawable="@drawable/seek_bar"
+                    android:thumb="@drawable/seek_thumb"
+                    android:layout_weight="1"
+                    />
+
+                <TextView
+                    android:id="@+id/player_total_time_text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+
+                    android:textColor="@color/blue_100"
+                    android:textStyle="bold"
+                    android:textSize="18sp"
+                    android:text="00:00"
+                    />
+            </LinearLayout>
+
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/main_recycler"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_margin="8dp"
+                android:layout_margin="4dp"
                 android:orientation="horizontal"
                 app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
                 tools:listitem="@layout/track_item" />

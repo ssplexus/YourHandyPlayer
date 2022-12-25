@@ -22,6 +22,7 @@ import timber.log.Timber
 class Interactor(val repo: MainRepository, val retrofitService: JamendoApi, private val preferences: PreferenceProvider) {
 
     var progressBarState: BehaviorSubject<Boolean> = BehaviorSubject.create()
+    var connectedDeviceTypeLiveData: MutableLiveData<Int> = MutableLiveData()
 
     private var tracksLiveData =  MutableLiveData<List<JamendoTrackData>>()
     private val modePropertyLiveData = preferences.modePropertyLiveData
@@ -100,8 +101,11 @@ class Interactor(val repo: MainRepository, val retrofitService: JamendoApi, priv
     fun isInFavorites(trackData: JamendoTrackData) = repo.isInFavorites(trackData.id)
     fun isInListenLater(trackData: JamendoTrackData) = repo.isInListenLater(trackData.id)
 
-    // Получить состояние карточки фильма (в избранном или нет)
+    // Получить состояние карточки трека (в избранном или нет)
     fun getTrackFavState(trackData: JamendoTrackData) : Int = repo.getTrackFavStateById(trackData.id)
+
+    // Получить состояние карточки трека (в списке посмотрть позже или нет)
+    fun getTrackLaterState(trackData: JamendoTrackData) : Int = repo.getTrackListenLaterStateById(trackData.id)
 
     // Обновить состояние "в избранном" карточки фильма
     fun updateTrackFavState(trackData: JamendoTrackData){

@@ -5,6 +5,7 @@ import android.media.MediaPlayer
 import android.os.Handler
 import android.util.TypedValue
 import android.view.View
+import androidx.core.text.isDigitsOnly
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.MutableLiveData
@@ -21,7 +22,9 @@ import timber.log.Timber
 import java.io.IOException
 import java.util.*
 import javax.inject.Inject
+import kotlin.collections.ArrayList
 import kotlin.concurrent.scheduleAtFixedRate
+import kotlin.math.roundToInt
 
 class HandyMediaPlayer (val interactor: Interactor) {
 
@@ -38,35 +41,91 @@ class HandyMediaPlayer (val interactor: Interactor) {
     private var currTrack: JamendoTrackData? = null
     private var isOnPlaying  = false
 
-    private val timer: Timer = Timer()
+    private var wave = arrayListOf<Int>()
 
+    var waveLiveData: MutableLiveData<Int> = MutableLiveData()
+
+    private val timer: Timer = Timer()
+    private var waveTimer: Timer ?= null
+    private var wavePos: Int = 0
 
     init {
         initPlayer()
     }
 
-    fun onStartTimer(){
+    private fun onStartTimer(){
         timer.scheduleAtFixedRate(0,1000) {
             if (isOnPlaying) progress.postValue(mediaPlayer.currentPosition)
         }
     }
 
+    private fun onStartWaveTimer(duration : Int){
+        Timber.d("onStartWaveTimer")
+
+        if(waveTimer != null) onStopWaveTimer()
+        waveTimer = Timer()
+        wavePos = 0
+//        if(wave.isEmpty() || wave.size == 0 || wave.size > duration) return
+//        val period = duration / wave.size
+        if(wave.isEmpty()) return
+        val period = duration / wave.size
+
+        Timber.d("Period = " + period)
+        waveTimer?.scheduleAtFixedRate(0,period.toLong()) {
+            if (isOnPlaying) {
+                if(!wave.isEmpty()) {
+                    var pos = (mediaPlayer.currentPosition.toFloat() / period).roundToInt()
+                    if(wavePos < pos) wavePos = pos
+                    if(wavePos < wave.size){
+                        Timber.d("WavePos (${wave.size}) = " + wavePos + " | " + wave[wavePos] + " | " + mediaPlayer.currentPosition + " | " + pos)
+                        waveLiveData.postValue( wave[wavePos++])
+                    }
+                }
+            }
+        }
+    }
+
+    private fun onStopWaveTimer(){
+        Timber.d("onStopWaveTimer")
+        waveTimer?.let {
+            it.cancel()
+            it.purge()
+        }
+        waveTimer = null
+    }
+
+
     fun setTrackList(list:List<JamendoTrackData>){
-        if (isOnPlaying) togglePlayPause()
+        if(mediaPlayer.isPlaying) mediaPlayer.pause()
+        isOnPlaying = false
+        playIconState.postValue(false)
+
         trackList = list
     }
 
     fun setTrack(track: JamendoTrackData, async : Boolean = true){
         currTrack = track
-        if(currTrack != null) {
+        if(currTrack != null)
+        {
+            Timber.d("Set track")
+            currTrack?.let {
+                val waveForm = it.waveform
+                Timber.d("WaveForm = " + waveForm)
+                wave = waveForm.split(",").filter { it.isDigitsOnly() }.map { it.toInt() } as ArrayList<Int>
+                Timber.d("Wave data size = " + wave.size + " | " + waveForm.split(",").size)
+            }
+
+
             mediaPlayer?.let {
                 if(it.isPlaying) it.stop()
                 it.reset()
                 try{
                     it.setDataSource(currTrack?.audio)
                     if (async) it.prepareAsync()
-                          else {it.prepare()
-                        togglePlayPause()}
+                          else {
+                                it.prepare()
+                                togglePlayPause()
+                          }
                 }
                 catch (e: IOException){
                     e.printStackTrace()
@@ -134,9 +193,11 @@ class HandyMediaPlayer (val interactor: Interactor) {
             if(it.isPlaying){
                 it.pause()
                 isOnPlaying = false
+                onStopWaveTimer()
                 playIconState.postValue(false)
             }else{
                 it.start()
+                onStartWaveTimer(it.duration)
                 isOnPlaying = true
                 playIconState.postValue(true)
 
@@ -162,7 +223,8 @@ class HandyMediaPlayer (val interactor: Interactor) {
                 bufferingLevel.postValue(0)
                 duration.postValue(it.duration)
                 onStartTimer()
-//                if (isOnPlaying) togglePlayPause()
+                if (isOnPlaying) togglePlayPause()
+
             }
             it.setOnCompletionListener {
                 onNextTrack()

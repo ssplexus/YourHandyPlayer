@@ -1,8 +1,13 @@
 package ru.ssnexus.yourhandyplayer.viewmodel
 
+import android.content.Context
+import android.media.AudioDeviceInfo
+import android.media.AudioManager
+import android.os.Build
+import androidx.annotation.RequiresApi
+import androidx.core.content.ContextCompat.getSystemService
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.subjects.BehaviorSubject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -11,8 +16,8 @@ import ru.ssnexus.database_module.data.entity.JamendoTrackData
 import ru.ssnexus.yourhandyplayer.App
 import ru.ssnexus.yourhandyplayer.domain.Interactor
 import ru.ssnexus.yourhandyplayer.utils.SingleLiveEvent
-import timber.log.Timber
 import javax.inject.Inject
+
 
 class HomeFragmentViewModel : ViewModel(){
 
@@ -21,6 +26,7 @@ class HomeFragmentViewModel : ViewModel(){
 
     val tagsPropertyLiveData = SingleLiveEvent<String>()
     val modePropertyLiveData: MutableLiveData<String>
+    val connectedDeviceTypeLiveData: MutableLiveData<Int>
     //Отслеживание данных состояния прогрессбара
     val showProgressBar: BehaviorSubject<Boolean>
 
@@ -37,6 +43,7 @@ class HomeFragmentViewModel : ViewModel(){
 
         tagsPropertyLiveData.value = interactor.getDefaultTagsFromPreferences()
         modePropertyLiveData = interactor.getMusicModeLiveDataFromPreferences()
+        connectedDeviceTypeLiveData = interactor.connectedDeviceTypeLiveData
     }
 
     fun getMusicMode() = interactor.getMusicModeFromPreferences()

@@ -12,7 +12,7 @@ interface JamendoApi {
         @Query("client_id") client_id: String,
         @Query("limit") limit: Int,
         @Query("offset") offset: Int,
-        @Query("tags") tags: String,
+        @Query("fuzzytags") tags: String,
         @Query("include") include: String
     ): Observable<JamendoResult>
 }

@@ -1,9 +1,18 @@
 package ru.ssnexus.yourhandyplayer.view
 
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
+import android.media.AudioDeviceInfo
+import android.media.AudioManager
+import android.os.Build
 import android.os.Bundle
 import android.view.View
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.core.content.edit
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.MutableLiveData
@@ -20,11 +29,14 @@ import ru.ssnexus.yourhandyplayer.data.preferences.PreferenceProvider
 import ru.ssnexus.yourhandyplayer.databinding.ActivityMainBinding
 import ru.ssnexus.yourhandyplayer.domain.Interactor
 import ru.ssnexus.yourhandyplayer.mediaplayer.HandyMediaPlayer
+import ru.ssnexus.yourhandyplayer.receivers.ConnectionChecker
 import ru.ssnexus.yourhandyplayer.utils.AutoDisposable
 import ru.ssnexus.yourhandyplayer.utils.addTo
 import ru.ssnexus.yourhandyplayer.view.fragments.DetailsFragment
 import ru.ssnexus.yourhandyplayer.view.fragments.HomeFragment
+import ru.ssnexus.yourhandyplayer.view.fragments.SplashScreenFragment
 import timber.log.Timber
+import java.util.concurrent.Executors
 import javax.inject.Inject
 
 class MainActivity : AppCompatActivity() {
@@ -32,9 +44,13 @@ class MainActivity : AppCompatActivity() {
     @Inject
     lateinit var interactor: Interactor
     private lateinit var binding: ActivityMainBinding
+    private lateinit var receiver: BroadcastReceiver
     private lateinit var tracksLiveData : MutableLiveData<List<JamendoTrackData>>
+    private lateinit var audioManager: AudioManager
 
     private var isHome = false
+    private var isExtras = false
+    private  var extraTrack: JamendoTrackData? = null
 
     val autoDisposable = AutoDisposable()
 
@@ -44,19 +60,63 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        Timber.d("Main:onCreate")
         binding = ActivityMainBinding.inflate(layoutInflater)
         //Передаем его в метод
         setContentView(binding.root)
         autoDisposable.bindTo(this.lifecycle)
         App.instance.dagger.inject(this)
 
+        // Приёмник внешних событий
+        receiver = ConnectionChecker()
+        audioManager = getSystemService(Context.AUDIO_SERVICE) as AudioManager
+
+        // Фильтр событий
+        val filters = IntentFilter().apply {
+            addAction(Intent.ACTION_HEADSET_PLUG)
+            addAction(Intent.ACTION_POWER_CONNECTED)
+            addAction(Intent.ACTION_BATTERY_LOW)
+            addAction(Intent.ACTION_BATTERY_OKAY)
+        }
+        // Регистрация приёмника
+        registerReceiver(receiver, filters)
+
+        supportActionBar?.hide()
+        title = ""
+        //Запускаем фрагмент при старте
+
+        if(savedInstanceState == null)
+        {
+            val extras = intent.extras
+            if(extras != null)
+            {
+                isExtras = true
+                extraTrack = extras.get(R.string.parcel_item_track.toString()) as JamendoTrackData
+            }
+        }
+
+        Executors.newSingleThreadExecutor().execute {
+            launchSplashScreenFragment()
+        }
+
+        initMainActivity()
+    }
+
+    fun launchStartFragment(){
+        if(isExtras) {
+            isExtras = false
+            extraTrack?.let { launchDetailsFragment(it) }
+            return
+        }
+
+        launchFragment(HomeFragment())
+    }
+
+    fun initMainActivity(){
         CoroutineScope(Dispatchers.IO).launch {
             interactor.clearTrackDataCache()
         }
 
         interactor.initDataObservers(this)
-
         tracksLiveData = interactor.getTracksLiveData()
 
         when(interactor.getMusicModeFromPreferences()){
@@ -70,23 +130,15 @@ class MainActivity : AppCompatActivity() {
                 interactor.setListenLaterPref()
             }
         }
-
         initPlayer()
+    }
 
-        //Запускаем фрагмент при старте
 
-        if(savedInstanceState == null)
-        {
-            val extras = intent.extras
-            if(extras != null)
-            {
-                val track = extras.get(R.string.parcel_item_track.toString()) as JamendoTrackData
-                handyMediaPlayer?.setTrack(track)
-                launchDetailsFragment(track)
-                return
-            }
+    fun initPlayer(){
+        handyMediaPlayer = HandyMediaPlayer(interactor)
+        tracksLiveData.observe(this){
+            handyMediaPlayer?.setTrackList(it)
         }
-        launchFragment(HomeFragment())
     }
 
     fun isHomeFragment(flag: Boolean){
@@ -107,6 +159,13 @@ class MainActivity : AppCompatActivity() {
     override fun onSupportNavigateUp(): Boolean {
         onBackPressed()
         return true
+    }
+
+    fun launchSplashScreenFragment() {
+        supportFragmentManager
+            .beginTransaction()
+            .replace(R.id.fragment_placeholder, SplashScreenFragment())
+            .commit()
     }
 
     fun launchFragment(fragment: Fragment) {
@@ -136,16 +195,6 @@ class MainActivity : AppCompatActivity() {
             .commit()
     }
 
-    fun bottomNavigationShow(flag : Boolean){
-        Timber.d("bottomNavigationShow")
-        if(flag) {
-            binding.bottomNavigation.visibility = View.VISIBLE
-            binding.bottomNavigation.layoutParams.height = resources.getDimension(R.dimen.toolbar_max_height).toInt()
-        }else{
-            binding.bottomNavigation.visibility = View.INVISIBLE
-            binding.bottomNavigation.layoutParams.height = resources.getDimension(R.dimen.toolbar_min_height).toInt()
-        }
-    }
 
     override fun onBackPressed() {
         if(supportFragmentManager.backStackEntryCount == 1)
@@ -178,44 +227,10 @@ class MainActivity : AppCompatActivity() {
             super.onBackPressed()
     }
 
-    fun initPlayer(){
-        handyMediaPlayer = HandyMediaPlayer(interactor)
-        if (handyMediaPlayer != null) {
-            binding.trackControl.setOnClickListener(handyMediaPlayer!!.onClickListener)
-            handyMediaPlayer?.playIconState?.observe(this){
-                if (it) {
-                    binding.trackControl.setImageResource(R.drawable.ic_baseline_stop_24)
-                } else {
 
-                    binding.trackControl.setImageResource(R.drawable.ic_baseline_play_arrow_24)
-                }
-            }
 
-            tracksLiveData.observe(this){
-                handyMediaPlayer?.setTrackList(it)
-            }
-        }
-    }
 
-    fun setBottomNavigationTrack(track: JamendoTrackData){
-
-        Timber.d("setBottomNavigationTrack")
-        if(handyMediaPlayer?.isPlaying() == true){
-            binding.bottomNavigation.visibility = View.VISIBLE
-            binding.bottomNavigation.layoutParams.height = resources.getDimension(R.dimen.toolbar_max_height).toInt()
-        }
-
-        binding.trackTitle.text = track.name
-
-        Glide.with(binding.bottomNavigation)
-                        //Загружаем сам ресурс
-                        .load(track.image)
-                        //Центруем изображение
-                        .centerCrop()
-                        //Указываем ImageView, куда будем загружать изображение
-                        .into(binding.artAvatar)
-
-    }
+    fun isWiredHeadsetOn() = audioManager.isWiredHeadsetOn
 
     fun getHandyMedialayer() = handyMediaPlayer
 

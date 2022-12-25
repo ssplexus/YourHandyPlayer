@@ -1,12 +1,15 @@
 package ru.ssnexus.yourhandyplayer.view.fragments
 
+import android.graphics.drawable.AnimationDrawable
 import android.os.Build
 import android.os.Bundle
+import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.SeekBar
-import androidx.core.content.edit
+import androidx.annotation.Dimension
+import androidx.annotation.RequiresApi
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
@@ -26,13 +29,20 @@ import ru.ssnexus.yourhandyplayer.utils.addTo
 import ru.ssnexus.yourhandyplayer.view.MainActivity
 import ru.ssnexus.yourhandyplayer.viewmodel.HomeFragmentViewModel
 import timber.log.Timber
+import java.text.SimpleDateFormat
 
 
 class HomeFragment : Fragment() {
 
+    companion object{
+        const val WAVE_STRIPS_CNT = 10
+    }
+
     private var bundle: Bundle? = null
     private lateinit var binding: FragmentHomeBinding
     private lateinit var tracksAdapter: TrackListRecyclerAdapter
+    private lateinit var playAnimation: AnimationDrawable
+
 
     private var tracksDataBase = listOf<JamendoTrackData>()
         //Используем backing field
@@ -46,6 +56,8 @@ class HomeFragment : Fragment() {
         }
 
     private val autoDisposable = AutoDisposable()
+
+    private var waveNum: Int = WAVE_STRIPS_CNT
 
     private val viewModel by lazy {
         ViewModelProvider.NewInstanceFactory().create(HomeFragmentViewModel::class.java)
@@ -69,10 +81,11 @@ class HomeFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         bundle = savedInstanceState
+        initWaveForm()
         initRecycler()
         initSeekBar()
         initButtons()
-
+//        (requireActivity() as MainActivity).supportActionBar?.hide()
         (requireActivity() as MainActivity).title = "Home page"
 
     }
@@ -90,6 +103,25 @@ class HomeFragment : Fragment() {
     override fun onStop() {
         super.onStop()
         (requireActivity() as MainActivity).isHomeFragment(true)
+    }
+
+    fun initWaveForm() {
+        Timber.d("initWaveForm " + binding.waveForm.childCount)
+
+        (requireActivity() as MainActivity).handyMediaPlayer?.waveLiveData?.observe(viewLifecycleOwner){
+
+            val dip = it.toFloat()
+
+            val px = TypedValue.applyDimension(
+                TypedValue.COMPLEX_UNIT_DIP,
+                dip,
+                resources.displayMetrics
+            )
+            //Timber.d("Wave: " + px)
+
+            binding.waveForm.getChildAt(--waveNum).layoutParams.height = px.toInt()
+            if (waveNum <= 0) waveNum = WAVE_STRIPS_CNT
+        }
     }
 
     private fun initButtons(){
@@ -125,16 +157,18 @@ class HomeFragment : Fragment() {
                 it.playIconState.observe (viewLifecycleOwner){
                     if (it) {
                         binding.playButton.setIconResource(R.drawable.ic_baseline_pause_24)
+                        playAnimation.start()
                     } else {
                         binding.playButton.setIconResource(R.drawable.ic_baseline_play_arrow_24)
-
+                        playAnimation.stop()
+                        playAnimation.selectDrawable(0)
                     }
                 }
             }
         }
 
         viewModel.modePropertyLiveData.observe(viewLifecycleOwner, Observer<String> {
-            Timber.d("modePropertyLiveData " + it)
+//            Timber.d("modePropertyLiveData " + it)
 
             when(it){
                 PreferenceProvider.TAGS_MODE -> {
@@ -151,6 +185,7 @@ class HomeFragment : Fragment() {
                 }
             }
         })
+        initForm()
     }
 
     fun initForm(){
@@ -168,16 +203,27 @@ class HomeFragment : Fragment() {
                 binding.musicModeButton.setImageResource(R.drawable.ic_baseline_watch_later_24)
             }
         }
-        viewModel.interactor.updateCurrentTracksData()
+
+        binding.playAnimation.apply {
+            if((requireActivity() as MainActivity).isWiredHeadsetOn())
+                setImageResource(R.drawable.headset_anim)
+            else
+                setImageResource(R.drawable.speaker_anim)
+            playAnimation = drawable as AnimationDrawable
+        }
+
+        viewModel.connectedDeviceTypeLiveData.observe(viewLifecycleOwner){
+            binding.playAnimation.setImageResource(it)
+        }
     }
 
     private fun initSeekBar(){
 
         if ((requireActivity() as MainActivity).handyMediaPlayer != null) {
-            (requireActivity() as MainActivity).handyMediaPlayer!!.let {
+            (requireActivity() as MainActivity).handyMediaPlayer?.let {
                 binding.seekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener{
                     override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
-                        Timber.d("Debug_yhp: onProgressChanged " + progress)
+//                        Timber.d("Debug_yhp: onProgressChanged " + progress)
                         if (fromUser) {
                             it.getMediaPlayer()
                                 ?.seekTo(progress)
@@ -200,22 +246,31 @@ class HomeFragment : Fragment() {
                     Timber.d("Duration=" + it)
                     binding.seekBar.max = it
                     binding.seekBar.secondaryProgress = 0
+                    binding.playerTotalTimeText.text = msecToTimeStamp(it)
+
                 }
+
                 it.bufferingLevel.observe(viewLifecycleOwner){
-                    Timber.d("BufferingLevel=" + it)
+//                    Timber.d("BufferingLevel=" + it)
 
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
                         binding.seekBar.secondaryProgress = it
                     }
                 }
                 it.progress.observe(viewLifecycleOwner){
-                    Timber.d("Progress=" + it)
+//                    Timber.d("Progress=" + it)
+                    binding.playerCurrentTimeText.text = msecToTimeStamp(it)
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
                         binding.seekBar.setProgress(it, false)
                     }
                 }
             }
         }
+    }
+
+    fun msecToTimeStamp(msec: Int): String {
+        val formatter = SimpleDateFormat("mm:ss")
+        return formatter.format(msec)
     }
 
     private fun initRecycler(){
@@ -264,7 +319,7 @@ class HomeFragment : Fragment() {
 
             viewModel.tagsPropertyLiveData.observe(viewLifecycleOwner, Observer<String> {
                 if(viewModel.getMusicMode() == PreferenceProvider.TAGS_MODE) {
-                    Timber.d("" + binding.musicModeTview.text + " " + it)
+                    Timber.d("musicModeTview.text = " + binding.musicModeTview.text + " " + it)
 
                     if(!it.equals(binding.musicModeTview.text)){
                         binding.musicModeTview.text = it

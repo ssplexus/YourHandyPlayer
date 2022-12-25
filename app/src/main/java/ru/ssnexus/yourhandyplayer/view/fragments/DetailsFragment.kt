@@ -71,6 +71,7 @@ class DetailsFragment : Fragment() {
 
         initButtons()
         initSeekBar()
+        (requireActivity() as MainActivity).supportActionBar?.show()
         (requireActivity() as MainActivity).title = "Details"
     }
 
@@ -92,6 +93,11 @@ class DetailsFragment : Fragment() {
                     if (viewModel.interactor.isInFavorites(track)) R.drawable.ic_baseline_favorite_24
                     else R.drawable.ic_baseline_favorite_border_24
                 )
+
+                binding.detailsFabLater.setImageResource(
+                    if (viewModel.interactor.isInListenLater(track)) R.drawable.ic_baseline_watch_later_24
+                    else R.drawable.ic_outline_watch_later_24
+                )
             }
         }
 
@@ -112,6 +118,10 @@ class DetailsFragment : Fragment() {
             MainScope().launch {
                 val job = scope.async {
                     viewModel.updateTrackListenLaterState(track)
+                    if(viewModel.getTrackLaterSate(track) >= 1)
+                        binding.detailsFabLater.setImageResource(R.drawable.ic_baseline_watch_later_24)
+                    else
+                        binding.detailsFabLater.setImageResource(R.drawable.ic_outline_watch_later_24)
                 }
             }
             NotificationHelper.notificationSet(requireContext(), track)
@@ -137,10 +147,6 @@ class DetailsFragment : Fragment() {
                 startActivity(Intent.createChooser(intent, "Share To:"))
             }
         }
-
-//        binding.detailsFabDownloadWp.setOnClickListener {
-//            performAsyncLoadOfPoster()
-//        }
 
         binding.forwardButton.setOnClickListener {
             (requireActivity() as MainActivity).handyMediaPlayer?.onNextTrack()

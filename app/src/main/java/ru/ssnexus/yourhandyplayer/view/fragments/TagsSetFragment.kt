@@ -15,20 +15,23 @@ import ru.ssnexus.yourhandyplayer.viewmodel.TagsSetViewModel
 class TagsSetFragment : Fragment() {
 
     companion object {
-        fun newInstance() = TagsSetFragment()
 
         private const val ROCK_TAG = "Rock"
         private const val POP_TAG = "Pop"
-        private const val RNB_TAG = "R&ampB"
+        private const val RNB_TAG = "RnB"
         private const val HIPHOP_TAG = "Hiphop"
-        private const val LOUNGE_TAG = "Lounge"
+        private const val CHILLOUT_TAG = "Chillout"
         private const val ELECTRONIC_TAG = "Electronic"
         private const val RELAXATION_TAG = "Relaxation"
         private const val METAL_TAG = "Metal"
         private const val CLASSICAL_TAG = "Classical"
         private const val JAZZ_TAG = "Jazz"
-        private const val WORLD_TAG = "World"
-        private const val SOUNDTRACK_TAG = "Soundtrack"
+        private const val HOUSE_TAG = "House"
+        private const val BLUES_TAG = "Blues"
+        private const val COUNTRY_TAG = "Country"
+        private const val REGGAE_TAG = "Reggae"
+        private const val PUNK_TAG = "Punk"
+        private const val LATIN_TAG = "Latin"
     }
 
     private lateinit var binding: FragmentTagsSetBinding
@@ -63,14 +66,18 @@ class TagsSetFragment : Fragment() {
         binding.popTag.setOnClickListener { setTags() }
         binding.rnbTag.setOnClickListener { setTags() }
         binding.hiphopTag.setOnClickListener { setTags() }
-        binding.loungeTag.setOnClickListener { setTags() }
+        binding.chilloutTag.setOnClickListener { setTags() }
         binding.electronicTag.setOnClickListener { setTags() }
         binding.relaxationTag.setOnClickListener { setTags() }
         binding.metalTag.setOnClickListener { setTags() }
         binding.classicalTag.setOnClickListener { setTags() }
         binding.jazzTag.setOnClickListener { setTags() }
-        binding.worldTag.setOnClickListener { setTags() }
-        binding.soundtrackTag.setOnClickListener { setTags() }
+        binding.houseTag.setOnClickListener{ setTags() }
+        binding.bluesTag.setOnClickListener { setTags() }
+        binding.countryTag.setOnClickListener { setTags() }
+        binding.reggaeTag.setOnClickListener { setTags() }
+        binding.punkTag.setOnClickListener { setTags() }
+        binding.latinTag.setOnClickListener { setTags() }
 
         binding.acceptButton.setOnClickListener {
             viewModel.saveTagsProperty(tagsProperty)
@@ -85,18 +92,23 @@ class TagsSetFragment : Fragment() {
                     POP_TAG -> binding.popTag.isChecked = true
                     RNB_TAG -> binding.rnbTag.isChecked = true
                     HIPHOP_TAG -> binding.hiphopTag.isChecked = true
-                    LOUNGE_TAG -> binding.loungeTag.isChecked = true
+                    CHILLOUT_TAG -> binding.chilloutTag.isChecked = true
                     ELECTRONIC_TAG -> binding.electronicTag.isChecked = true
                     RELAXATION_TAG -> binding.relaxationTag.isChecked = true
                     METAL_TAG -> binding.metalTag.isChecked = true
                     CLASSICAL_TAG -> binding.classicalTag.isChecked = true
                     JAZZ_TAG -> binding.jazzTag.isChecked = true
-                    WORLD_TAG -> binding.worldTag.isChecked = true
-                    SOUNDTRACK_TAG -> binding.soundtrackTag.isChecked = true
+                    HOUSE_TAG -> binding.houseTag.isChecked = true
+                    BLUES_TAG -> binding.bluesTag.isChecked = true
+                    COUNTRY_TAG -> binding.countryTag.isChecked = true
+                    REGGAE_TAG -> binding.reggaeTag.isChecked = true
+                    PUNK_TAG -> binding.punkTag.isChecked = true
+                    LATIN_TAG -> binding.latinTag.isChecked = true
                 }
             }
         })
 
+        (requireActivity() as MainActivity).supportActionBar?.show()
         (requireActivity() as MainActivity).title = "Choose tags"
     }
 
@@ -117,14 +129,18 @@ class TagsSetFragment : Fragment() {
         if (binding.popTag.isChecked) result += binding.popTag.text.toString() + delim
         if (binding.rnbTag.isChecked) result += binding.rnbTag.text.toString() + delim
         if (binding.hiphopTag.isChecked) result += binding.hiphopTag.text.toString() + delim
-        if (binding.loungeTag.isChecked) result += binding.loungeTag.text.toString() + delim
+        if (binding.chilloutTag.isChecked) result += binding.chilloutTag.text.toString() + delim
         if (binding.electronicTag.isChecked) result += binding.electronicTag.text.toString() + delim
         if (binding.relaxationTag.isChecked) result += binding.relaxationTag.text.toString() + delim
         if (binding.metalTag.isChecked) result += binding.metalTag.text.toString() + delim
         if (binding.classicalTag.isChecked) result += binding.classicalTag.text.toString() + delim
         if (binding.jazzTag.isChecked) result += binding.jazzTag.text.toString() + delim
-        if (binding.worldTag.isChecked) result += binding.worldTag.text.toString() + delim
-        if (binding.soundtrackTag.isChecked) result += binding.soundtrackTag.text.toString() + delim
+        if (binding.houseTag.isChecked) result += binding.houseTag.text.toString() + delim
+        if (binding.countryTag.isChecked) result += binding.countryTag.text.toString() + delim
+        if (binding.reggaeTag.isChecked) result += binding.reggaeTag.text.toString() + delim
+        if (binding.punkTag.isChecked) result += binding.punkTag.text.toString() + delim
+        if (binding.latinTag.isChecked) result += binding.latinTag.text.toString() + delim
+
         if (result.isEmpty()) result = "Select your tags"
         result = result.removeSuffix(delim)
 

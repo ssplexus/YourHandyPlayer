@@ -22,6 +22,8 @@ class DetailsViewModel : ViewModel() {
 
     fun getTrackFavSate(trackData: JamendoTrackData) = interactor.getTrackFavState(trackData)
 
+    fun getTrackLaterSate(trackData: JamendoTrackData) = interactor.getTrackLaterState(trackData)
+
     fun updateTrackFavState(trackData: JamendoTrackData){
         interactor.updateTrackFavState(trackData)
     }

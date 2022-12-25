@@ -7,321 +7,283 @@
     tools:context=".view.fragments.TagsSetFragment"
     android:visibility="visible"
     tools:visibility="visible"
-    android:layout_marginBottom="25dp">
+    android:background="@color/blue_200"
+    >
 
-    <GridLayout
-        android:id="@+id/tags_grid"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_gravity="center"
-        android:columnCount="1"
-        android:orientation="horizontal"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        >
-
-
-
-        <LinearLayout
+        <GridLayout
+            android:id="@+id/tags_grid"
             android:layout_width="match_parent"
-            android:layout_height="65dp"
-            android:gravity="center"
-            android:layout_row="0"
-            android:layout_column="0"
-            android:weightSum="100">
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:columnCount="2"
+            android:orientation="horizontal"
 
-            <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:gravity="center"
-                android:layout_weight="50"
-                android:background="@drawable/round_shape">
-
-                <Switch
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            >
+                <androidx.appcompat.widget.SwitchCompat
                     android:id="@+id/rock_tag"
                     android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
+                    android:layout_height="wrap_content"
                     android:checked="false"
                     android:text="Rock"
                     android:textColor="@color/white"
                     android:textSize="20sp"
+                    android:padding="@dimen/tag_settings_padding"
+                    android:layout_margin="@dimen/tag_settings_margin"
+                    android:textStyle="bold"
+                    android:background="@drawable/round_shape"
+                    android:layout_gravity="fill"
+                    android:layout_columnWeight="1"
+                    />
 
-                    android:textStyle="bold" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:gravity="center"
-                android:layout_weight="50"
-                android:background="@drawable/round_shape">
-
-                <Switch
+                    <androidx.appcompat.widget.SwitchCompat
                     android:id="@+id/pop_tag"
                     android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
+                    android:layout_height="wrap_content"
                     android:text="Pop"
                     android:textColor="@color/white"
                     android:textSize="20sp"
+                    android:padding="@dimen/tag_settings_padding"
+                    android:layout_margin="@dimen/tag_settings_margin"
                     android:textStyle="bold"
-
+                    android:background="@drawable/round_shape"
+                    android:layout_gravity="fill"
+                    android:layout_columnWeight="1"
                     />
-            </LinearLayout>
 
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="65dp"
-            android:gravity="center"
-            android:layout_row="1"
-            android:layout_column="0"
-            android:weightSum="100">
-
-            <LinearLayout
+            <androidx.appcompat.widget.SwitchCompat
+                android:id="@+id/rnb_tag"
                 android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:gravity="center"
-                android:layout_weight="50"
-                android:background="@drawable/round_shape">
+                android:layout_height="wrap_content"
+                android:checked="false"
+                android:text="R&amp;B"
+                android:textColor="@color/white"
+                android:textSize="20sp"
+                android:padding="@dimen/tag_settings_padding"
+                android:layout_margin="@dimen/tag_settings_margin"
+                android:textStyle="bold"
+                android:background="@drawable/round_shape"
+                android:layout_gravity="fill"
+                android:layout_columnWeight="1"
+                />
 
-                <Switch
-                    android:id="@+id/rnb_tag"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
-                    android:text="R&amp;B"
-                    android:textColor="@color/white"
-                    android:textSize="20sp"
-                    android:textStyle="bold"
-
-                    />
-            </LinearLayout>
-
-            <LinearLayout
+            <androidx.appcompat.widget.SwitchCompat
+                android:id="@+id/hiphop_tag"
                 android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:gravity="center"
-                android:layout_weight="50"
-                android:background="@drawable/round_shape">
+                android:layout_height="wrap_content"
+                android:text="Hiphop"
+                android:textColor="@color/white"
+                android:textSize="20sp"
+                android:padding="@dimen/tag_settings_padding"
+                android:layout_margin="@dimen/tag_settings_margin"
+                android:textStyle="bold"
+                android:background="@drawable/round_shape"
+                android:layout_gravity="fill"
+                android:layout_columnWeight="1"
+                />
 
-                <Switch
-                    android:id="@+id/hiphop_tag"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
-                    android:text="Hiphop"
-                    android:textColor="@color/white"
-                    android:textSize="20sp"
-                    android:textStyle="bold"
-
-                    />
-            </LinearLayout>
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="65dp"
-            android:gravity="center"
-            android:layout_row="2"
-            android:layout_column="0"
-            android:weightSum="100">
-
-            <LinearLayout
+            <androidx.appcompat.widget.SwitchCompat
+                android:id="@+id/chillout_tag"
                 android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:gravity="center"
-                android:layout_weight="50"
-                android:background="@drawable/round_shape">
+                android:layout_height="wrap_content"
+                android:checked="false"
+                android:text="Chillout"
+                android:textColor="@color/white"
+                android:textSize="20sp"
+                android:padding="@dimen/tag_settings_padding"
+                android:layout_margin="@dimen/tag_settings_margin"
+                android:textStyle="bold"
+                android:background="@drawable/round_shape"
+                android:layout_gravity="fill"
+                android:layout_columnWeight="1"
+                />
 
-                <Switch
-                    android:id="@+id/lounge_tag"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
-                    android:text="Lounge"
-                    android:textColor="@color/white"
-                    android:textSize="20sp"
-                    android:textStyle="bold"
-
-                    />
-            </LinearLayout>
-
-            <LinearLayout
+            <androidx.appcompat.widget.SwitchCompat
+                android:id="@+id/electronic_tag"
                 android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:gravity="center"
-                android:layout_weight="50"
-                android:background="@drawable/round_shape">
+                android:layout_height="wrap_content"
+                android:text="Electronic"
+                android:textColor="@color/white"
+                android:textSize="20sp"
+                android:padding="@dimen/tag_settings_padding"
+                android:layout_margin="@dimen/tag_settings_margin"
+                android:textStyle="bold"
+                android:background="@drawable/round_shape"
+                android:layout_gravity="fill"
+                android:layout_columnWeight="1"
+                />
 
-                <Switch
-                    android:id="@+id/electronic_tag"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
-                    android:text="Electronic"
-                    android:textColor="@color/white"
-                    android:textSize="20sp"
-                    android:textStyle="bold"
-
-                    />
-            </LinearLayout>
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="65dp"
-            android:gravity="center"
-            android:layout_row="3"
-            android:layout_column="0"
-            android:weightSum="100">
-
-            <LinearLayout
+            <androidx.appcompat.widget.SwitchCompat
+                android:id="@+id/relaxation_tag"
                 android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:gravity="center"
-                android:layout_weight="50"
-                android:background="@drawable/round_shape">
+                android:layout_height="wrap_content"
+                android:checked="false"
+                android:text="Relaxation"
+                android:textColor="@color/white"
+                android:textSize="20sp"
+                android:padding="@dimen/tag_settings_padding"
+                android:layout_margin="@dimen/tag_settings_margin"
+                android:textStyle="bold"
+                android:background="@drawable/round_shape"
+                android:layout_gravity="fill"
+                android:layout_columnWeight="1"
+                />
 
-                <Switch
-                    android:id="@+id/relaxation_tag"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
-                    android:text="Relaxation"
-                    android:textColor="@color/white"
-                    android:textSize="20sp"
-                    android:textStyle="bold"
-
-                    />
-            </LinearLayout>
-
-            <LinearLayout
+            <androidx.appcompat.widget.SwitchCompat
+                android:id="@+id/metal_tag"
                 android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:gravity="center"
-                android:layout_weight="50"
-                android:background="@drawable/round_shape">
+                android:layout_height="wrap_content"
+                android:text="Metal"
+                android:textColor="@color/white"
+                android:textSize="20sp"
+                android:padding="@dimen/tag_settings_padding"
+                android:layout_margin="@dimen/tag_settings_margin"
+                android:textStyle="bold"
+                android:background="@drawable/round_shape"
+                android:layout_gravity="fill"
+                android:layout_columnWeight="1"
+                />
 
-                <Switch
-                    android:id="@+id/metal_tag"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
-                    android:text="Metal"
-                    android:textColor="@color/white"
-                    android:textSize="20sp"
-                    android:textStyle="bold"
-
-                    />
-            </LinearLayout>
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="65dp"
-            android:gravity="center"
-            android:layout_row="4"
-            android:layout_column="0"
-            android:weightSum="100">
-
-            <LinearLayout
+            <androidx.appcompat.widget.SwitchCompat
+                android:id="@+id/classical_tag"
                 android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:gravity="center"
-                android:layout_weight="50"
-                android:background="@drawable/round_shape">
+                android:layout_height="wrap_content"
+                android:checked="false"
+                android:text="Classical"
+                android:textColor="@color/white"
+                android:textSize="20sp"
+                android:padding="@dimen/tag_settings_padding"
+                android:layout_margin="@dimen/tag_settings_margin"
+                android:textStyle="bold"
+                android:background="@drawable/round_shape"
+                android:layout_gravity="fill"
+                android:layout_columnWeight="1"
+                />
 
-                <Switch
-                    android:id="@+id/classical_tag"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
-                    android:text="Classical"
-                    android:textColor="@color/white"
-                    android:textSize="20sp"
-                    android:textStyle="bold"
-
-                    />
-            </LinearLayout>
-
-            <LinearLayout
+            <androidx.appcompat.widget.SwitchCompat
+                android:id="@+id/jazz_tag"
                 android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:gravity="center"
-                android:layout_weight="50"
-                android:background="@drawable/round_shape">
+                android:layout_height="wrap_content"
+                android:text="Jazz"
+                android:textColor="@color/white"
+                android:textSize="20sp"
+                android:padding="@dimen/tag_settings_padding"
+                android:layout_margin="@dimen/tag_settings_margin"
+                android:textStyle="bold"
+                android:background="@drawable/round_shape"
+                android:layout_gravity="fill"
+                android:layout_columnWeight="1"
+                />
 
-                <Switch
-                    android:id="@+id/jazz_tag"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
-                    android:text="Jazz"
-                    android:textColor="@color/white"
-                    android:textSize="20sp"
-                    android:textStyle="bold"
-
-                    />
-            </LinearLayout>
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="65dp"
-            android:gravity="center"
-            android:layout_row="5"
-            android:layout_column="0"
-            android:weightSum="100">
-
-            <LinearLayout
+            <androidx.appcompat.widget.SwitchCompat
+                android:id="@+id/house_tag"
                 android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:gravity="center"
-                android:layout_weight="50"
-                android:background="@drawable/round_shape">
+                android:layout_height="wrap_content"
+                android:checked="false"
+                android:text="House"
+                android:textColor="@color/white"
+                android:textSize="20sp"
+                android:padding="@dimen/tag_settings_padding"
+                android:layout_margin="@dimen/tag_settings_margin"
+                android:textStyle="bold"
+                android:background="@drawable/round_shape"
+                android:layout_gravity="fill"
+                android:layout_columnWeight="1"
+                />
 
-                <Switch
-                    android:id="@+id/world_tag"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
-                    android:text="World"
-                    android:textColor="@color/white"
-                    android:textSize="20sp"
-                    android:textStyle="bold"
-
-                    />
-            </LinearLayout>
-
-            <LinearLayout
+            <androidx.appcompat.widget.SwitchCompat
+                android:id="@+id/blues_tag"
                 android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:gravity="center"
-                android:layout_weight="50"
-                android:background="@drawable/round_shape">
+                android:layout_height="wrap_content"
+                android:text="Blues"
+                android:textColor="@color/white"
+                android:textSize="20sp"
+                android:padding="@dimen/tag_settings_padding"
+                android:layout_margin="@dimen/tag_settings_margin"
+                android:textStyle="bold"
+                android:background="@drawable/round_shape"
+                android:layout_gravity="fill"
+                android:layout_columnWeight="1"
+                />
 
-                <Switch
-                    android:id="@+id/soundtrack_tag"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
-                    android:text="Soundtrack"
-                    android:textColor="@color/white"
-                    android:textSize="20sp"
-                    android:textStyle="bold"
+            <androidx.appcompat.widget.SwitchCompat
+                android:id="@+id/country_tag"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:checked="false"
+                android:text="Country"
+                android:textColor="@color/white"
+                android:textSize="20sp"
+                android:padding="@dimen/tag_settings_padding"
+                android:layout_margin="@dimen/tag_settings_margin"
+                android:textStyle="bold"
+                android:background="@drawable/round_shape"
+                android:layout_gravity="fill"
+                android:layout_columnWeight="1"
+                />
 
-                    />
-            </LinearLayout>
-        </LinearLayout>
+            <androidx.appcompat.widget.SwitchCompat
+                android:id="@+id/reggae_tag"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Reggae"
+                android:textColor="@color/white"
+                android:textSize="20sp"
+                android:padding="@dimen/tag_settings_padding"
+                android:layout_margin="@dimen/tag_settings_margin"
+                android:textStyle="bold"
+                android:background="@drawable/round_shape"
+                android:layout_gravity="fill"
+                android:layout_columnWeight="1"
+                />
+
+            <androidx.appcompat.widget.SwitchCompat
+                android:id="@+id/punk_tag"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:checked="false"
+                android:text="Punk"
+                android:textColor="@color/white"
+                android:textSize="20sp"
+                android:padding="@dimen/tag_settings_padding"
+                android:layout_margin="@dimen/tag_settings_margin"
+                android:textStyle="bold"
+                android:background="@drawable/round_shape"
+                android:layout_gravity="fill"
+                android:layout_columnWeight="1"
+                />
+
+            <androidx.appcompat.widget.SwitchCompat
+                android:id="@+id/latin_tag"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Latin"
+                android:textColor="@color/white"
+                android:textSize="20sp"
+                android:padding="@dimen/tag_settings_padding"
+                android:layout_margin="@dimen/tag_settings_margin"
+                android:textStyle="bold"
+                android:background="@drawable/round_shape"
+                android:layout_gravity="fill"
+                android:layout_columnWeight="1"
+                />
+        </GridLayout>
+
         <TextView
-            android:id="@+id/tags_tv"
-            android:layout_width="match_parent"
-            android:layout_height="70dp"
-            android:layout_row="6"
-            android:layout_column="0"
+        android:id="@+id/tags_tv"
+        android:layout_width="match_parent"
+        android:layout_height="70dp"
 
-            android:layout_marginTop="10dp"
-            android:autoSizeTextType="uniform"
-            android:gravity="center"
-            android:maxLines="3"
-            android:paddingHorizontal="20dp"
-            android:textAlignment="center"
-            android:textColor="@color/blue_100"
-            android:textStyle="bold" />
-    </GridLayout>
+        android:autoSizeTextType="uniform"
+        android:gravity="center"
+        android:maxLines="3"
+        android:paddingHorizontal="20dp"
+        android:textAlignment="center"
+        android:textColor="@color/blue_100"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toTopOf="parent" />
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/accept_button"
@@ -348,6 +310,7 @@
         app:icon="@drawable/ic_baseline_check_circle_outline_24"
 
         app:strokeColor="@color/white_transp"
-        app:strokeWidth="5dp" />
+        app:strokeWidth="5dp"
+        android:layout_marginBottom="8dp"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
