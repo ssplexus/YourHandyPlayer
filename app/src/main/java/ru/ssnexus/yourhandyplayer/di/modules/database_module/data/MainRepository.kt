@@ -31,7 +31,6 @@ class MainRepository(private val trackDao: TrackDao) {
         trackDao.getCachedFavoritesTracks().forEach {
             list.add(convertFromFavorites(it))
         }
-        Timber.d("getCachedFavoriteTracks = " + list.size)
         return list
     }
 
@@ -217,7 +216,6 @@ class MainRepository(private val trackDao: TrackDao) {
     fun getSize() : Int = trackDao.getSize()
 
     fun clearTrackDataCache()    {
-        Timber.d("clearTrackDataCache")
         trackDao.nukeTracksData()
     }
 

@@ -207,7 +207,6 @@ class DetailsFragment : Fragment() {
             (requireActivity() as MainActivity).handyMediaPlayer!!.let {
                 binding.seekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener{
                     override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
-                        Timber.d("Debug_yhp: onProgressChanged " + progress)
                         if (fromUser) {
                             it.getMediaPlayer()
                                 ?.seekTo(progress)
@@ -227,19 +226,15 @@ class DetailsFragment : Fragment() {
                 })
 
                 it.duration.observe(viewLifecycleOwner){
-                    Timber.d("Duration=" + it)
                     binding.seekBar.max = it
                     binding.seekBar.secondaryProgress = 0
                 }
                 it.bufferingLevel.observe(viewLifecycleOwner){
-                    Timber.d("BufferingLevel=" + it)
-
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
                         binding.seekBar.secondaryProgress = it
                     }
                 }
                 it.progress.observe(viewLifecycleOwner){
-                    Timber.d("Progress=" + it)
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
                         binding.seekBar.setProgress(it, false)
                     }

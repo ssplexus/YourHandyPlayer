@@ -43,7 +43,6 @@ class HomeFragment : Fragment() {
     private lateinit var tracksAdapter: TrackListRecyclerAdapter
     private lateinit var playAnimation: AnimationDrawable
 
-
     private var tracksDataBase = listOf<JamendoTrackData>()
         //Используем backing field
         set(value) {
@@ -58,6 +57,7 @@ class HomeFragment : Fragment() {
     private val autoDisposable = AutoDisposable()
 
     private var waveNum: Int = WAVE_STRIPS_CNT
+    private var maxWaveHeight = 0
 
     private val viewModel by lazy {
         ViewModelProvider.NewInstanceFactory().create(HomeFragmentViewModel::class.java)
@@ -81,6 +81,7 @@ class HomeFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         bundle = savedInstanceState
+
         initWaveForm()
         initRecycler()
         initSeekBar()
@@ -96,7 +97,6 @@ class HomeFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
-        Timber.d("OnResume")
         (requireActivity() as MainActivity).isHomeFragment(true)
     }
 
@@ -106,21 +106,35 @@ class HomeFragment : Fragment() {
     }
 
     fun initWaveForm() {
-        Timber.d("initWaveForm " + binding.waveForm.childCount)
+        (requireActivity() as MainActivity).handyMediaPlayer?.let {
+            it.onSetTrackLiveEvent.observe(viewLifecycleOwner) {
+                for (i in binding.waveForm.childCount - 1 downTo 0 step 1) {
+                    binding.waveForm.getChildAt(i).layoutParams.height =
+                        resources.getDimension(R.dimen.wave_height).toInt()
+                }
+            }
 
-        (requireActivity() as MainActivity).handyMediaPlayer?.waveLiveData?.observe(viewLifecycleOwner){
+            it.waveLiveData?.observe(viewLifecycleOwner){
 
-            val dip = it.toFloat()
+                val dip = it.toFloat()
+                var px = TypedValue.applyDimension(
+                    TypedValue.COMPLEX_UNIT_DIP,
+                    dip,
+                    resources.displayMetrics
+                )
+                var dim = px.toInt()
+//                if(maxWaveHeight == 0) binding.waveForm.measure(0,0)
+                maxWaveHeight = binding.waveForm.measuredHeight
+                Timber.d("dim prev = " + dim + " | " + maxWaveHeight + " | " + resources.getDimension(R.dimen.wave_height).toInt())
+                if(dim < resources.getDimension(R.dimen.wave_height).toInt())
+                    dim = resources.getDimension(R.dimen.wave_height).toInt()
+                else if(dim > maxWaveHeight)
+                    dim = maxWaveHeight
 
-            val px = TypedValue.applyDimension(
-                TypedValue.COMPLEX_UNIT_DIP,
-                dip,
-                resources.displayMetrics
-            )
-            //Timber.d("Wave: " + px)
+                binding.waveForm.getChildAt(--waveNum).layoutParams.height = dim
 
-            binding.waveForm.getChildAt(--waveNum).layoutParams.height = px.toInt()
-            if (waveNum <= 0) waveNum = WAVE_STRIPS_CNT
+                if (waveNum <= 0) waveNum = WAVE_STRIPS_CNT
+            }
         }
     }
 
@@ -168,8 +182,6 @@ class HomeFragment : Fragment() {
         }
 
         viewModel.modePropertyLiveData.observe(viewLifecycleOwner, Observer<String> {
-//            Timber.d("modePropertyLiveData " + it)
-
             when(it){
                 PreferenceProvider.TAGS_MODE -> {
                     binding.musicModeTview.text = viewModel.getTagsPreferences()
@@ -223,7 +235,6 @@ class HomeFragment : Fragment() {
             (requireActivity() as MainActivity).handyMediaPlayer?.let {
                 binding.seekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener{
                     override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
-//                        Timber.d("Debug_yhp: onProgressChanged " + progress)
                         if (fromUser) {
                             it.getMediaPlayer()
                                 ?.seekTo(progress)
@@ -243,7 +254,6 @@ class HomeFragment : Fragment() {
                 })
 
                 it.duration.observe(viewLifecycleOwner){
-                    Timber.d("Duration=" + it)
                     binding.seekBar.max = it
                     binding.seekBar.secondaryProgress = 0
                     binding.playerTotalTimeText.text = msecToTimeStamp(it)
@@ -251,14 +261,11 @@ class HomeFragment : Fragment() {
                 }
 
                 it.bufferingLevel.observe(viewLifecycleOwner){
-//                    Timber.d("BufferingLevel=" + it)
-
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
                         binding.seekBar.secondaryProgress = it
                     }
                 }
                 it.progress.observe(viewLifecycleOwner){
-//                    Timber.d("Progress=" + it)
                     binding.playerCurrentTimeText.text = msecToTimeStamp(it)
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
                         binding.seekBar.setProgress(it, false)
@@ -319,21 +326,27 @@ class HomeFragment : Fragment() {
 
             viewModel.tagsPropertyLiveData.observe(viewLifecycleOwner, Observer<String> {
                 if(viewModel.getMusicMode() == PreferenceProvider.TAGS_MODE) {
-                    Timber.d("musicModeTview.text = " + binding.musicModeTview.text + " " + it)
-
-                    if(!it.equals(binding.musicModeTview.text)){
-                        binding.musicModeTview.text = it
-                        viewModel.updateTracks(it)
-                    }
+                    Timber.d("tagsPropertyLiveData " + it)
+//                    if(!it.equals(binding.musicModeTview.text)){
+//                        binding.musicModeTview.text = it
+//                        viewModel.updateTracks(it)
+//                    }
                 }
             })
 
             viewModel.tracksLiveData.observe(viewLifecycleOwner){
-                Timber.d("Home Data!!!")
-                    if(isAdded) {
-                        binding.seekBar.visibility = if (it.size > 0) View.VISIBLE else View.INVISIBLE
-                        tracksDataBase = it
+                if(isAdded) {
+                    if (it.size > 0){
+                        binding.seekBar.visibility = View.VISIBLE
+                        binding.waveForm.visibility = View.VISIBLE
+                        binding.playerTotalTimeText.visibility = View.VISIBLE
+                    } else {
+                        binding.seekBar.visibility = View.INVISIBLE
+                        binding.waveForm.visibility = View.INVISIBLE
+                        binding.playerTotalTimeText.visibility = View.INVISIBLE
                     }
+                    tracksDataBase = it
+                }
             }
 
             viewModel.showProgressBar

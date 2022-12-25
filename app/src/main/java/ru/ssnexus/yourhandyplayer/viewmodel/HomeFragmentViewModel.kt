@@ -16,6 +16,7 @@ import ru.ssnexus.database_module.data.entity.JamendoTrackData
 import ru.ssnexus.yourhandyplayer.App
 import ru.ssnexus.yourhandyplayer.domain.Interactor
 import ru.ssnexus.yourhandyplayer.utils.SingleLiveEvent
+import timber.log.Timber
 import javax.inject.Inject
 
 
@@ -61,6 +62,7 @@ class HomeFragmentViewModel : ViewModel(){
     }
 
     fun updateTracks(tags: String) {
+        Timber.d("updateTracks")
         CoroutineScope(Dispatchers.IO).launch {
             interactor.clearTrackDataCache()
         }

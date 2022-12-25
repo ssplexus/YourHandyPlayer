@@ -33,6 +33,8 @@ class HandyMediaPlayer (val interactor: Interactor) {
     var bufferingLevel: MutableLiveData<Int> = MutableLiveData()
     var duration: MutableLiveData<Int> = MutableLiveData()
 
+    var onSetTrackLiveEvent: MutableLiveData<Boolean> = MutableLiveData()
+
     private val mediaPlayer: MediaPlayer = MediaPlayer()
     var onClickListener: View.OnClickListener? = null
 
@@ -60,40 +62,37 @@ class HandyMediaPlayer (val interactor: Interactor) {
     }
 
     private fun onStartWaveTimer(duration : Int){
-        Timber.d("onStartWaveTimer")
 
         if(waveTimer != null) onStopWaveTimer()
         waveTimer = Timer()
         wavePos = 0
-//        if(wave.isEmpty() || wave.size == 0 || wave.size > duration) return
-//        val period = duration / wave.size
+
         if(wave.isEmpty()) return
         val period = duration / wave.size
 
-        Timber.d("Period = " + period)
         waveTimer?.scheduleAtFixedRate(0,period.toLong()) {
             if (isOnPlaying) {
                 if(!wave.isEmpty()) {
                     var pos = (mediaPlayer.currentPosition.toFloat() / period).roundToInt()
-                    if(wavePos < pos) wavePos = pos
-                    if(wavePos < wave.size){
-                        Timber.d("WavePos (${wave.size}) = " + wavePos + " | " + wave[wavePos] + " | " + mediaPlayer.currentPosition + " | " + pos)
-                        waveLiveData.postValue( wave[wavePos++])
-                    }
+                     if(wavePos != pos && pos !=0){
+                         wavePos = pos
+                         if(wavePos < wave.size){
+                             waveLiveData.postValue( wave[wavePos])
+                         }
+                     }
+
                 }
             }
         }
     }
 
     private fun onStopWaveTimer(){
-        Timber.d("onStopWaveTimer")
         waveTimer?.let {
             it.cancel()
             it.purge()
         }
         waveTimer = null
     }
-
 
     fun setTrackList(list:List<JamendoTrackData>){
         if(mediaPlayer.isPlaying) mediaPlayer.pause()
@@ -107,14 +106,11 @@ class HandyMediaPlayer (val interactor: Interactor) {
         currTrack = track
         if(currTrack != null)
         {
-            Timber.d("Set track")
+            onSetTrackLiveEvent.postValue(true)
             currTrack?.let {
                 val waveForm = it.waveform
-                Timber.d("WaveForm = " + waveForm)
-                wave = waveForm.split(",").filter { it.isDigitsOnly() }.map { it.toInt() } as ArrayList<Int>
-                Timber.d("Wave data size = " + wave.size + " | " + waveForm.split(",").size)
+                wave = waveForm.split(",").map { it.replace(Regex("[^0-9]"), "").toInt() } as ArrayList<Int>
             }
-
 
             mediaPlayer?.let {
                 if(it.isPlaying) it.stop()
@@ -218,13 +214,11 @@ class HandyMediaPlayer (val interactor: Interactor) {
             }
             it.setAudioStreamType(AudioManager.STREAM_MUSIC)
             it.setOnPreparedListener{
-                Timber.d("OnPreparedListener")
                 progress.postValue(0)
                 bufferingLevel.postValue(0)
                 duration.postValue(it.duration)
                 onStartTimer()
                 if (isOnPlaying) togglePlayPause()
-
             }
             it.setOnCompletionListener {
                 onNextTrack()

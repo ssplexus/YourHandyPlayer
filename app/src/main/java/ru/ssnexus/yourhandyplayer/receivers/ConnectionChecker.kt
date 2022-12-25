@@ -23,12 +23,9 @@ class ConnectionChecker : BroadcastReceiver() {
         //Проверяем, какой пришел action
         when (intent.action) {
             Intent.ACTION_HEADSET_PLUG -> {
-                Timber.d("ConnectionChecker : Headset")
                 when (intent.getIntExtra("state", -1)){
                     0 -> interactor.connectedDeviceTypeLiveData.postValue(R.drawable.speaker_anim)
                     else -> interactor.connectedDeviceTypeLiveData.postValue(R.drawable.headset_anim)
-//                    0 -> Toast.makeText(context, "Headphones not plugged in", Toast.LENGTH_LONG).show()
-//                    else -> Toast.makeText(context, "Headphones plugged in", Toast.LENGTH_LONG).show()
                 }
             }
 

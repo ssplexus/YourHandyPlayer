@@ -48,8 +48,6 @@ class Interactor(val repo: MainRepository, val retrofitService: JamendoApi, priv
     }
 
     fun getTracksByTagsFromApi(tags: String = "", offset: Int = -1) {
-
-        Timber.d("getTracksByTagsFromApi")
         var curTags = tags
         if (curTags.isBlank()) {
             if (getDefaultTagsFromPreferences() == PreferenceProvider.DEFAULT_TAGS) curTags = ""
@@ -72,11 +70,9 @@ class Interactor(val repo: MainRepository, val retrofitService: JamendoApi, priv
             }
             .subscribeBy(
                 onError = {
-                          Timber.e("Error: Can't get tracks data")
                     progressBarState.onNext(false)
                 },
                 onNext = {
-                    Timber.e("Success: Get SCloud data" + it.get(1).name)
                     progressBarState.onNext(false)
                     repo.putToDb(it)
 

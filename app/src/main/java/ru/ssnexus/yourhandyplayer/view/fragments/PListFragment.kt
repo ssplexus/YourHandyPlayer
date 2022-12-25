@@ -107,7 +107,6 @@ class PListFragment : Fragment() {
             tracksAdapter.registerAdapterDataObserver(object : RecyclerView.AdapterDataObserver(){
                 override fun onChanged() {
                         super.onChanged()
-                        Timber.d("registerAdapterDataObserver: onChange")
                         (requireActivity() as MainActivity).let {
                             var pos = it.handyMediaPlayer?.getCurrTrackPos()
                             if (pos != null) {
@@ -130,7 +129,6 @@ class PListFragment : Fragment() {
             addItemDecoration(decorator)
 
             viewModel.tracksLiveData.observe(viewLifecycleOwner){
-                Timber.d("PList Data!!!")
                 if(isAdded) tracksDataBase = it
             }
 
@@ -142,17 +140,10 @@ class PListFragment : Fragment() {
                     val lManager = layoutManager
                     if (lManager is LinearLayoutManager)
                     {
-                        Timber.d("Swipe up!" + lManager.findLastCompletelyVisibleItemPosition() + " " + lManager.itemCount )
                         if(lManager.findLastCompletelyVisibleItemPosition() >= lManager.itemCount - 5)
                         {
-                            //binding.pullToRefresh.isRefreshing = true
-
                             //Делаем новый запрос трэков на сервер
-
                             viewModel.getNextTracks()
-
-                            //Убираем крутящиеся колечко
-                           // binding.pullToRefresh.isRefreshing = false
                         }
                     }
                 }
@@ -181,8 +172,6 @@ class PListFragment : Fragment() {
     }
 
     fun setBottomNavigationTrack(track: JamendoTrackData){
-
-        Timber.d("setBottomNavigationTrack")
         if ((requireActivity() as MainActivity).handyMediaPlayer?.isPlaying() == true){
             bottomNavigationShow(flag = true)
         }

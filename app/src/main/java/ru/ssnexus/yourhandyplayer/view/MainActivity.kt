@@ -117,7 +117,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         interactor.initDataObservers(this)
-        tracksLiveData = interactor.getTracksLiveData()
+        tracksLiveData = MutableLiveData<List<JamendoTrackData>>()
 
         when(interactor.getMusicModeFromPreferences()){
             PreferenceProvider.TAGS_MODE -> {
