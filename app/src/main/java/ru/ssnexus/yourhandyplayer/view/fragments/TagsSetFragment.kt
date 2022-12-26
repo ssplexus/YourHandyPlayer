@@ -7,6 +7,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.lifecycle.Observer
+import ru.ssnexus.yourhandyplayer.data.preferences.PreferenceProvider
 import ru.ssnexus.yourhandyplayer.databinding.FragmentTagsSetBinding
 import ru.ssnexus.yourhandyplayer.utils.AutoDisposable
 import ru.ssnexus.yourhandyplayer.view.MainActivity
@@ -80,6 +81,7 @@ class TagsSetFragment : Fragment() {
         binding.latinTag.setOnClickListener { setTags() }
 
         binding.acceptButton.setOnClickListener {
+            if(tagsProperty.isBlank()) tagsProperty = PreferenceProvider.DEFAULT_TAGS
             viewModel.saveTagsProperty(tagsProperty)
             (requireActivity() as MainActivity).launchFragment(HomeFragment())
         }

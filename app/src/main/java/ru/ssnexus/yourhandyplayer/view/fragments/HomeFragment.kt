@@ -123,9 +123,8 @@ class HomeFragment : Fragment() {
                     resources.displayMetrics
                 )
                 var dim = px.toInt()
-//                if(maxWaveHeight == 0) binding.waveForm.measure(0,0)
+
                 maxWaveHeight = binding.waveForm.measuredHeight
-                Timber.d("dim prev = " + dim + " | " + maxWaveHeight + " | " + resources.getDimension(R.dimen.wave_height).toInt())
                 if(dim < resources.getDimension(R.dimen.wave_height).toInt())
                     dim = resources.getDimension(R.dimen.wave_height).toInt()
                 else if(dim > maxWaveHeight)
@@ -326,11 +325,8 @@ class HomeFragment : Fragment() {
 
             viewModel.tagsPropertyLiveData.observe(viewLifecycleOwner, Observer<String> {
                 if(viewModel.getMusicMode() == PreferenceProvider.TAGS_MODE) {
-                    Timber.d("tagsPropertyLiveData " + it)
-//                    if(!it.equals(binding.musicModeTview.text)){
-//                        binding.musicModeTview.text = it
-//                        viewModel.updateTracks(it)
-//                    }
+                    if(viewModel.tags.isBlank()) viewModel.tags = it
+                    else if(!it.equals(viewModel.tags)) viewModel.updateTracks(it)
                 }
             })
 
@@ -340,10 +336,12 @@ class HomeFragment : Fragment() {
                         binding.seekBar.visibility = View.VISIBLE
                         binding.waveForm.visibility = View.VISIBLE
                         binding.playerTotalTimeText.visibility = View.VISIBLE
+                        binding.playerCurrentTimeText.visibility = View.VISIBLE
                     } else {
                         binding.seekBar.visibility = View.INVISIBLE
                         binding.waveForm.visibility = View.INVISIBLE
                         binding.playerTotalTimeText.visibility = View.INVISIBLE
+                        binding.playerCurrentTimeText.visibility = View.INVISIBLE
                     }
                     tracksDataBase = it
                 }

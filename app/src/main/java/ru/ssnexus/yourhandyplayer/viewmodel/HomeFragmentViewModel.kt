@@ -31,6 +31,8 @@ class HomeFragmentViewModel : ViewModel(){
     //Отслеживание данных состояния прогрессбара
     val showProgressBar: BehaviorSubject<Boolean>
 
+    var tags = ""
+
     //Инициализируем интерактор
     @Inject
     lateinit var interactor: Interactor
@@ -62,7 +64,6 @@ class HomeFragmentViewModel : ViewModel(){
     }
 
     fun updateTracks(tags: String) {
-        Timber.d("updateTracks")
         CoroutineScope(Dispatchers.IO).launch {
             interactor.clearTrackDataCache()
         }
