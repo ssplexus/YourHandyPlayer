@@ -12,6 +12,7 @@ import ru.ssnexus.yourhandyplayer.databinding.FragmentTagsSetBinding
 import ru.ssnexus.yourhandyplayer.utils.AutoDisposable
 import ru.ssnexus.yourhandyplayer.view.MainActivity
 import ru.ssnexus.yourhandyplayer.viewmodel.TagsSetViewModel
+import timber.log.Timber
 
 class TagsSetFragment : Fragment() {
 
@@ -83,11 +84,11 @@ class TagsSetFragment : Fragment() {
         binding.acceptButton.setOnClickListener {
             if(tagsProperty.isBlank()) tagsProperty = PreferenceProvider.DEFAULT_TAGS
             viewModel.saveTagsProperty(tagsProperty)
-            (requireActivity() as MainActivity).launchFragment(HomeFragment())
+            (requireActivity() as MainActivity).launchFragment(HomeFragment(), tagsProperty)
         }
 
         viewModel.tagsPropertyLiveData.observe(viewLifecycleOwner, Observer<String> {
-
+            tagsProperty = it
             it.split("+").forEach {tag ->
                 when(tag.trim()) {
                     ROCK_TAG -> binding.rockTag.isChecked = true

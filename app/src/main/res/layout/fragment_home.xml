@@ -102,6 +102,7 @@
             android:maxLines="3"
 
             android:text="Choose your mood"
+            android:padding="@dimen/music_mode_padding"
             android:textAlignment="center"
             android:textAllCaps="false"
             android:textColor="@color/white"

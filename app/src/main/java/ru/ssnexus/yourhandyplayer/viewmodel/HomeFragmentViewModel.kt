@@ -31,7 +31,7 @@ class HomeFragmentViewModel : ViewModel(){
     //Отслеживание данных состояния прогрессбара
     val showProgressBar: BehaviorSubject<Boolean>
 
-    var tags = ""
+    var tags: String = ""
 
     //Инициализируем интерактор
     @Inject

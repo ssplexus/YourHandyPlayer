@@ -82,6 +82,8 @@ class HomeFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         bundle = savedInstanceState
 
+        viewModel.tags = arguments?.get(R.string.parcel_item_tags.toString()).toString()
+
         initWaveForm()
         initRecycler()
         initSeekBar()
@@ -219,7 +221,8 @@ class HomeFragment : Fragment() {
             if((requireActivity() as MainActivity).isWiredHeadsetOn())
                 setImageResource(R.drawable.headset_anim)
             else
-                setImageResource(R.drawable.speaker_anim)
+                setImageResource(R.drawable.headset_anim)
+//                setImageResource(R.drawable.speaker_anim)
             playAnimation = drawable as AnimationDrawable
         }
 
@@ -325,8 +328,8 @@ class HomeFragment : Fragment() {
 
             viewModel.tagsPropertyLiveData.observe(viewLifecycleOwner, Observer<String> {
                 if(viewModel.getMusicMode() == PreferenceProvider.TAGS_MODE) {
-                    if(viewModel.tags.isBlank()) viewModel.tags = it
-                    else if(!it.equals(viewModel.tags)) viewModel.updateTracks(it)
+                    if(!viewModel.tags.isBlank())
+                            viewModel.updateTracks(it)
                 }
             })
 
