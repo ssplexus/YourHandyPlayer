@@ -6,4 +6,7 @@
     <integer name="rating_donut_view_normal_stroke">10</integer>
     <integer name="http_client_timeout">30</integer>
 
+    <integer name="wave_sum">100</integer>
+    <integer name="wave">10</integer>
+
 </resources>

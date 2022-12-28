@@ -11,88 +11,10 @@
         android:id="@+id/fragment_placeholder"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-
-        app:layout_constraintBottom_toTopOf="@+id/bottom_navigation"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="1.0"
         tools:layout_editor_absoluteX="0dp" />
 
-    <androidx.appcompat.widget.Toolbar
-        android:id="@+id/bottom_navigation"
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:visibility="invisible"
-
-        android:background="#C6000000"
-        app:contentInsetStart="0dp"
-        app:itemIconTint="@android:color/white"
-        app:itemTextColor="@android:color/white"
-        app:labelVisibilityMode="labeled"
-
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent">
-
-        <androidx.constraintlayout.widget.ConstraintLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:padding="5dp">
-
-            <ImageView
-                android:id="@+id/art_avatar"
-                android:layout_width="@dimen/track_item_iview_normal_width"
-                android:layout_height="100dp"
-                android:scaleType="fitCenter"
-                app:layout_constraintLeft_toLeftOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                tools:src="@tools:sample/avatars" />
-
-            <TextView
-                android:id="@+id/track_title"
-                android:layout_width="0dp"
-                android:layout_height="0dp"
-                android:padding="10dp"
-                android:textColor="@color/white"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintLeft_toRightOf="@id/art_avatar"
-                app:layout_constraintRight_toLeftOf="@id/track_control"
-                app:layout_constraintTop_toTopOf="parent"
-                android:text="text"
-                tools:text="@tools:sample/lorem/random"
-                />
-
-            <ImageView
-                android:id="@+id/track_control"
-                android:layout_width="40dp"
-                android:layout_height="match_parent"
-                android:src="@drawable/ic_baseline_play_arrow_24"
-                app:layout_constraintRight_toRightOf="parent"
-                android:clickable="true"
-
-                />
-
-
-        </androidx.constraintlayout.widget.ConstraintLayout>
-
-
-    </androidx.appcompat.widget.Toolbar>
-
-
-    <!--
-    <com.google.android.material.bottomnavigation.BottomNavigationView
-        android:id="@+id/bottom_navigation"
-        android:layout_width="match_parent"
-        android:layout_height="150dp"
-        android:background="@color/blue_200"
-        app:itemIconTint="@android:color/white"
-        app:itemTextColor="@android:color/white"
-        app:labelVisibilityMode="labeled"
-        app:layout_constrainedHeight="true"
-        app:layout_constraintBottom_toBottomOf="parent"
-
-
-        app:menu="@menu/navigation"
-         />
-    -->
 
 </androidx.constraintlayout.widget.ConstraintLayout>

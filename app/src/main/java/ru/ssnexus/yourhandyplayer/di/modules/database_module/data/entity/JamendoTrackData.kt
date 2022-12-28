@@ -10,9 +10,8 @@ import java.sql.Date
 
 
 @Parcelize
-@Entity(tableName = "tracks", indices = [Index(value = ["mid"], unique = true)])
+@Entity(tableName = "tracks", indices = [Index(value = ["id"], unique = true)])
 data class JamendoTrackData(
-    //@PrimaryKey(autoGenerate = false) val mid: Int = 0,
     @PrimaryKey(autoGenerate = true) val mid: Int = 0,
     @ColumnInfo(name = "album_id") val album_id: Int,
     @ColumnInfo(name = "album_image") val album_image: String,
@@ -43,7 +42,9 @@ data class JamendoTrackData(
     @ColumnInfo(name = "releasedate") val releasedate: String,
     @ColumnInfo(name = "shareurl") val shareurl: String,
     @ColumnInfo(name = "shorturl") val shorturl: String,
-    @ColumnInfo(name = "waveform") val waveform: String
+    @ColumnInfo(name = "waveform") val waveform: String,
+    @ColumnInfo(name = "fav_state") var fav_state: Int = -1,
+    @ColumnInfo(name = "listen_later_state") var listen_later_state: Int = -1
 
 ) : Parcelable
 

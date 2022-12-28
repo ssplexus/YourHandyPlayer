@@ -1,91 +1,146 @@
 package ru.ssnexus.yourhandyplayer.domain
 
-import io.reactivex.rxjava3.core.Observable
+import androidx.lifecycle.MutableLiveData
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.kotlin.subscribeBy
 import io.reactivex.rxjava3.schedulers.Schedulers
+import io.reactivex.rxjava3.subjects.BehaviorSubject
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import ru.ssnexus.database_module.data.MainRepository
 import ru.ssnexus.database_module.data.entity.JamendoTrackData
 import ru.ssnexus.yourhandyplayer.data.API
 import ru.ssnexus.yourhandyplayer.data.preferences.PreferenceProvider
 import ru.ssnexus.yourhandyplayer.di.modules.remote_module.JamendoApi
-import ru.ssnexus.yourhandyplayer.di.modules.remote_module.entity.jamendo.JamendoResult
-import ru.ssnexus.yourhandyplayer.di.modules.remote_module.entity.jamendo.JamendoTrack
+import ru.ssnexus.yourhandyplayer.utils.AutoDisposable
 import ru.ssnexus.yourhandyplayer.utils.Converter
+import ru.ssnexus.yourhandyplayer.utils.addTo
+import ru.ssnexus.yourhandyplayer.view.MainActivity
 import timber.log.Timber
 
 class Interactor(val repo: MainRepository, val retrofitService: JamendoApi, private val preferences: PreferenceProvider) {
 
-//    var progressBarState: BehaviorSubject<Boolean> = BehaviorSubject.create()
+    var progressBarState: BehaviorSubject<Boolean> = BehaviorSubject.create()
+    var connectedDeviceTypeLiveData: MutableLiveData<Int> = MutableLiveData()
 
-    fun getTracksByTagsFromApi() {
+    private var tracksLiveData =  MutableLiveData<List<JamendoTrackData>>()
+    private val modePropertyLiveData = preferences.modePropertyLiveData
 
-        Timber.d("getTracksByTagsFromApi")
-//        //Показываем ProgressBar
-//        progressBarState.onNext(true)
+    fun initDataObservers(main: MainActivity) {
+
+        repo.getTracksDataObservable().subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe{
+                    tracksLiveData.postValue(it)
+            }.addTo(main.autoDisposable)
+
+        modePropertyLiveData.observe(main){
+            CoroutineScope(Dispatchers.IO).launch {
+                clearTrackDataCache()
+                when (it){
+                    PreferenceProvider.TAGS_MODE -> getTracksByTagsFromApi()
+                    PreferenceProvider.FAVORITES_MODE -> repo.putToDb(repo.getCachedFavoriteTracks())
+                    PreferenceProvider.LISTEN_LATER_MODE -> repo.putToDb(repo.getCachedListenLaterTracks())
+                }
+            }
+        }
+    }
+
+    fun getTracksByTagsFromApi(tags: String = "", offset: Int = -1) {
+        var curTags = tags
+        if (curTags.isBlank()) {
+            if (getDefaultTagsFromPreferences() == PreferenceProvider.DEFAULT_TAGS) curTags = ""
+            else curTags = getDefaultTagsFromPreferences()
+        }
+        curTags = curTags.filter {!it.isWhitespace() }
+
+        //Показываем ProgressBar
+        progressBarState.onNext(true)
+
         //Метод getDefaultCategoryFromPreferences() будет получать при каждом запросе нужный нам список фильмов
-        retrofitService.getTracksByTags(API.CLIENT_ID,10, "rock", "musicinfo")
+        retrofitService.getTracksByTags(API.CLIENT_ID,
+                                        API.PAGE_LIMIT,
+                                        if (offset < 0) getDBSize() else offset,
+                                        curTags,
+                                        API.MUSIC_INFO)
             .subscribeOn(Schedulers.io())
             .map {
                 Converter.convertApiListToDtoList(it)
             }
             .subscribeBy(
                 onError = {
-                          Timber.e("Error: Can't get tracks data")
-//                    repo.u
-                    //progressBarState.onNext(false)
+                    progressBarState.onNext(false)
                 },
                 onNext = {
-                    Timber.e("Success: Get SCloud data" + it.get(1).name)
-                    //repo.trackListData. = it
-//                    repo.updateList(it.results)
-                    //progressBarState.onNext(false)
+                    progressBarState.onNext(false)
                     repo.putToDb(it)
-                    Timber.e("Info!" + repo.getTracksData().size)
+
                 }
             )
     }
 
-    fun getTracksDataObservable(): Observable<List<JamendoTrackData>> = repo.getTracksDataObservable()
+    fun getTracksLiveData() = tracksLiveData
 
-    fun getTracksData(): List<JamendoTrackData> = repo.getTracksData()
+    fun updateCurrentTracksData() {
+        tracksLiveData.postValue(repo.getTracksDataObservable().blockingFirst())
+    }
 
-    //fun getTrackListData(): Observable<List<Track>>? = repo.getTrackList()
+    fun getDBSize(): Int {
+        var result = 0
+        CoroutineScope(Dispatchers.IO).launch {
+            result = repo.getSize()
+        }
+        return result
+    }
 
-//    // Получаем результат запроса поиска
-//    fun getSearchResultFromApi(search: String, page: Int = 1): Observable<List<Film>> = retrofitService.getFilmFromSearch(API.KEY, "ru-RU", search, page)
-//        .map {
-//            Converter.convertApiListToDtoList(it.tmdbFilms)
-//        }
-//
-//    fun getFilmFromApi(id: Int): Observable<Film> = retrofitService.getFilm(id, API.KEY, "ru-RU")
-//        .map {
-//            Converter.convertApiToDto(it)
-//        }
+    fun isInFavorites(trackData: JamendoTrackData) = repo.isInFavorites(trackData.id)
+    fun isInListenLater(trackData: JamendoTrackData) = repo.isInListenLater(trackData.id)
 
-//    // Обновление rview исходными значениями при очистки поля поиска фильмов
-//    fun recallData(){
-//        Completable.fromSingle<List<Film>> {
-//            repo.putToDb(repo.getAllFromDBAsList())
-//        }
-//            .subscribeOn(Schedulers.io())
-//            .subscribe()
-//    }
+    // Получить состояние карточки трека (в избранном или нет)
+    fun getTrackFavState(trackData: JamendoTrackData) : Int = repo.getTrackFavStateById(trackData.id)
 
-    //fun getFilmsFromDB(): Observable<List<Film>> = repo.getAllFromDB()
+    // Получить состояние карточки трека (в списке посмотрть позже или нет)
+    fun getTrackLaterState(trackData: JamendoTrackData) : Int = repo.getTrackListenLaterStateById(trackData.id)
 
-//    fun getDBSize(): Int = repo.getSize()
-//
-//    fun clearCache()
-//    {
-//        repo.clearCache()
-//    }
+    // Обновить состояние "в избранном" карточки фильма
+    fun updateTrackFavState(trackData: JamendoTrackData){
+        repo.updateTrackFavStateById(trackData.id)
+    }
 
-//    //Метод для сохранения настроек
-//    fun saveDefaultCategoryToPreferences(category: String) {
-//        preferences.saveDefaultCategory(category)
-//    }
-//    //Метод для получения настроек
-//    fun getDefaultCategoryFromPreferences() = preferences.getDefaultCategory()
+    // Обновить состояние "послушать позже" карточки фильма
+    fun updateTrackListenLaterState(trackData: JamendoTrackData){
+        repo.updateTrackListenLaterStateById(trackData.id)
+    }
+
+    fun clearTrackDataCache(){
+        repo.clearTrackDataCache()
+    }
+
+    //Метод для получения настроек
+    fun getDefaultTagsFromPreferences() = preferences.getDefaultTags()
+
+    fun saveTagsToPreferences(tags : String) {
+        preferences.saveTags(tags)
+    }
+
+    fun getMusicModeFromPreferences() = preferences.getMode()
+
+    fun getMusicModeLiveDataFromPreferences() = preferences.modePropertyLiveData
+
+    fun setListenLaterPref(){
+        preferences.setListenLaterMode()
+    }
+
+    fun setFavoritesPref(){
+        preferences.setFavoritesMode()
+    }
+
+    fun setTagsPref(){
+        preferences.setTagsMode()
+    }
+
+    fun changeMusicMode() = preferences.changeMode()
 
     //Получить время первого запуска
     fun getFirstLaunchTime() = preferences.getFirstLaunchTime()

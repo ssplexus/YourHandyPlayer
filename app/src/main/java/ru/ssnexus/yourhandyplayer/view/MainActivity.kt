@@ -1,32 +1,50 @@
 package ru.ssnexus.yourhandyplayer.view
 
 import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
 import android.media.AudioManager
-import android.media.MediaPlayer
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.util.TypedValue
-import android.view.View
+import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
-import com.bumptech.glide.Glide
+import androidx.lifecycle.MutableLiveData
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import ru.ssnexus.database_module.data.entity.JamendoTrackData
 import ru.ssnexus.yourhandyplayer.App
 import ru.ssnexus.yourhandyplayer.R
+import ru.ssnexus.yourhandyplayer.data.preferences.PreferenceProvider
 import ru.ssnexus.yourhandyplayer.databinding.ActivityMainBinding
 import ru.ssnexus.yourhandyplayer.domain.Interactor
+import ru.ssnexus.yourhandyplayer.mediaplayer.HandyMediaPlayer
+import ru.ssnexus.yourhandyplayer.receivers.ConnectionChecker
+import ru.ssnexus.yourhandyplayer.utils.AutoDisposable
+import ru.ssnexus.yourhandyplayer.view.fragments.DetailsFragment
 import ru.ssnexus.yourhandyplayer.view.fragments.HomeFragment
-import ru.ssnexus.yourhandyplayer.view.fragments.PListFragment
-import java.io.IOException
-import java.net.URL
+import ru.ssnexus.yourhandyplayer.view.fragments.SplashScreenFragment
+import java.util.concurrent.Executors
 import javax.inject.Inject
 
 class MainActivity : AppCompatActivity() {
 
-    private var mediaPlayer:MediaPlayer? = null
-//    @Inject
-//    lateinit var interactor: Interactor
-
+    @Inject
+    lateinit var interactor: Interactor
     private lateinit var binding: ActivityMainBinding
+    private lateinit var receiver: BroadcastReceiver
+    private lateinit var tracksLiveData : MutableLiveData<List<JamendoTrackData>>
+    private lateinit var audioManager: AudioManager
+
+    private var isHome = false
+    private var isExtras = false
+    private  var extraTrack: JamendoTrackData? = null
+
+    val autoDisposable = AutoDisposable()
+
+    var handyMediaPlayer: HandyMediaPlayer? = null
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -34,18 +52,146 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         //Передаем его в метод
         setContentView(binding.root)
+        autoDisposable.bindTo(this.lifecycle)
+        App.instance.dagger.inject(this)
 
-        initPlayer()
-        //App.instance.dagger.inject(this)
-        //Инициализируем объект
+        // Приёмник внешних событий
+        receiver = ConnectionChecker()
+        audioManager = getSystemService(Context.AUDIO_SERVICE) as AudioManager
 
+        // Фильтр событий
+        val filters = IntentFilter().apply {
+            addAction(Intent.ACTION_HEADSET_PLUG)
+            addAction(Intent.ACTION_POWER_CONNECTED)
+            addAction(Intent.ACTION_BATTERY_LOW)
+            addAction(Intent.ACTION_BATTERY_OKAY)
+        }
+        // Регистрация приёмника
+        registerReceiver(receiver, filters)
 
+        supportActionBar?.hide()
+        title = ""
         //Запускаем фрагмент при старте
+
+        if(savedInstanceState == null)
+        {
+            val extras = intent.extras
+            if(extras != null)
+            {
+                isExtras = true
+                extraTrack = extras.get(R.string.parcel_item_track.toString()) as JamendoTrackData
+            }
+        }
+
+        Executors.newSingleThreadExecutor().execute {
+            launchSplashScreenFragment()
+        }
+
+        initMainActivity()
+    }
+
+    fun launchStartFragment(){
+        if(isExtras) {
+            isExtras = false
+            extraTrack?.let { launchDetailsFragment(it) }
+            return
+        }
+
         launchFragment(HomeFragment())
     }
 
+    fun initMainActivity(){
+        CoroutineScope(Dispatchers.IO).launch {
+            interactor.clearTrackDataCache()
+        }
 
-    fun launchFragment(fragment: Fragment) {
+        interactor.initDataObservers(this)
+        tracksLiveData = interactor.getTracksLiveData()
+
+        when(interactor.getMusicModeFromPreferences()){
+            PreferenceProvider.TAGS_MODE -> {
+                interactor.setTagsPref()
+            }
+            PreferenceProvider.FAVORITES_MODE -> {
+                interactor.setFavoritesPref()
+            }
+            else -> {
+                interactor.setListenLaterPref()
+            }
+        }
+        initPlayer()
+    }
+
+
+    fun initPlayer(){
+        handyMediaPlayer = HandyMediaPlayer(interactor)
+        tracksLiveData.observe(this){
+            handyMediaPlayer?.setTrackList(it)
+        }
+    }
+
+    fun isHomeFragment(flag: Boolean){
+
+        isHome = flag
+        var actionBar = getSupportActionBar()
+        if (actionBar != null)
+            if (!flag)
+            {
+                actionBar.setDisplayHomeAsUpEnabled(true)
+                actionBar.setDisplayShowHomeEnabled(true)
+            } else {
+                actionBar.setDisplayHomeAsUpEnabled(false)
+                actionBar.setDisplayShowHomeEnabled(false)
+            }
+    }
+
+    override fun onSupportNavigateUp(): Boolean {
+        onBackPressed()
+        return true
+    }
+
+    fun launchSplashScreenFragment() {
+        supportFragmentManager
+            .beginTransaction()
+            .replace(R.id.fragment_placeholder, SplashScreenFragment())
+            .commit()
+    }
+
+    fun launchFragment(fragment: Fragment, tagsBundle:String = "") {
+        if(tagsBundle.isBlank())
+            //Запускаем фрагмент
+            supportFragmentManager
+                .beginTransaction()
+                .replace(R.id.fragment_placeholder, fragment)
+                .addToBackStack(null)
+                .commit()
+        else {
+            //Создаем "посылку"
+            val bundle = Bundle()
+            //Кладем наш трек в "посылку"
+            bundle.putString(R.string.parcel_item_tags.toString(), tagsBundle )
+            //Прикрепляем нашу "посылку" к фрагменту
+            fragment.arguments = bundle
+            //Запускаем фрагмент
+            supportFragmentManager
+                .beginTransaction()
+                .replace(R.id.fragment_placeholder, fragment)
+                .addToBackStack(null)
+                .commit()
+        }
+
+    }
+
+    fun launchDetailsFragment(track: JamendoTrackData) {
+        //Создаем "посылку"
+        val bundle = Bundle()
+        //Кладем наш трек в "посылку"
+        bundle.putParcelable(R.string.parcel_item_track.toString(), track)
+        //Кладем фрагмент с деталями в перменную
+        val fragment = DetailsFragment()
+        //Прикрепляем нашу "посылку" к фрагменту
+        fragment.arguments = bundle
+
         //Запускаем фрагмент
         supportFragmentManager
             .beginTransaction()
@@ -54,104 +200,50 @@ class MainActivity : AppCompatActivity() {
             .commit()
     }
 
-    fun bottomNavigationShow(flag : Boolean){
-        if(flag) {
-            binding.bottomNavigation.visibility = View.VISIBLE
-            binding.bottomNavigation.layoutParams.height = TypedValue.applyDimension(
-                TypedValue.COMPLEX_UNIT_DIP,
-                150f,
-                resources.displayMetrics
-            ).toInt()
-        }else{
-            binding.bottomNavigation.visibility = View.INVISIBLE
-            binding.bottomNavigation.layoutParams.height = TypedValue.applyDimension(
-                TypedValue.COMPLEX_UNIT_DIP,
-                1f,
-                resources.displayMetrics
-            ).toInt()
+
+    override fun onBackPressed() {
+        if(supportFragmentManager.backStackEntryCount == 1)
+        {
+            if(isHome)
+            AlertDialog.Builder(this)
+                .setTitle(R.string.is_exit)
+                .setIcon(R.drawable.ic_round_menu_24)
+                .setPositiveButton(R.string.yes) { _, _ ->
+                    super.onBackPressed()
+                    if(android.os.Build.VERSION.SDK_INT >= 21)
+                    {
+                        finishAndRemoveTask();
+                    }
+                    else if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.JELLY_BEAN)
+                    {
+                        finishAffinity();
+                    } else{
+                        finish()
+                    }
+                    System.exit(0);
+                }
+                .setNegativeButton(R.string.no) { _, _ ->
+
+                }
+                .show()
+            else launchFragment(HomeFragment())
         }
-    }
-
-    fun setTrack(track: JamendoTrackData){
-
-        binding.bottomNavigation.visibility = View.VISIBLE
-        binding.bottomNavigation.layoutParams.height = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
-            150f,
-            resources.displayMetrics).toInt()
-        binding.trackTitle.text = track.name
-
-        Glide.with(binding.bottomNavigation)
-                        //Загружаем сам ресурс
-                        .load(track.image)
-//            //Центруем изображение
-                        .centerCrop()
-//            //Указываем ImageView, куда будем загружать изображение
-                        .into(binding.artAvatar)
-
-        mediaPlayer?.let {
-            if(it.isPlaying){
-                it.stop()
-                it.reset()
-            }
-            try{
-                it.setDataSource(track.audio)
-                it.prepareAsync()
-            }
-            catch (e:IOException){
-                e.printStackTrace()
-            }
-        }
-
-    }
-
-    fun isPlaying(): Boolean {
-        if(mediaPlayer == null) return false
-        else{
-            mediaPlayer?.let {
-                return it.isPlaying
-            }
-            return false
-        }
+        else
+            super.onBackPressed()
     }
 
 
 
-    fun togglePlayPause(){
-        mediaPlayer?.let {
-            if(it.isPlaying){
-                it.pause()
-                binding.trackControl.setImageResource(R.drawable.ic_baseline_play_arrow_24)
-            }else{
-                it.start()
-                binding.trackControl.setImageResource(R.drawable.ic_baseline_stop_24)
-            }
-        }
-    }
 
-    fun initPlayer(){
-        binding.trackControl.setOnClickListener {
-            togglePlayPause()
-        }
-        mediaPlayer = MediaPlayer()
-        mediaPlayer?.let {
-            it.setAudioStreamType(AudioManager.STREAM_MUSIC)
-            it.setOnPreparedListener{
-                togglePlayPause()
-            }
-            it.setOnCompletionListener {
-                binding.trackControl.setImageResource(R.drawable.ic_baseline_play_arrow_24)
-            }
-        }
+    fun isWiredHeadsetOn() = audioManager.isWiredHeadsetOn
 
-    }
+    fun getHandyMedialayer() = handyMediaPlayer
 
     override fun onDestroy() {
         super.onDestroy()
-        if (mediaPlayer != null){
-            if(mediaPlayer?.isPlaying == true) mediaPlayer?.stop()
-            mediaPlayer?.release()
-            mediaPlayer = null
-
+        if(handyMediaPlayer != null) {
+            handyMediaPlayer?.onDestroy()
+            handyMediaPlayer = null
         }
     }
 }

@@ -3,19 +3,21 @@
 <selector xmlns:android="http://schemas.android.com/apk/res/android" >
     <item android:state_pressed="true">
     <shape xmlns:android="http://schemas.android.com/apk/res/android">
-        <stroke android:color="@color/white_transp" android:width="6dp"/>
+        <stroke android:color="@color/white_transp" android:width="@dimen/shape_selector_pressed"/>
         <solid android:color="@color/blue_transp_100"/>
-        <corners android:bottomLeftRadius="25dp"
-            android:topLeftRadius="25dp">
+        <corners
+            android:bottomLeftRadius="@dimen/round_shape_radius"
+            android:topLeftRadius="@dimen/round_shape_radius">
         </corners>
     </shape>
     </item>
     <item>
         <shape xmlns:android="http://schemas.android.com/apk/res/android">
-            <stroke android:color="@color/white" android:width="3dp"/>
+            <stroke android:color="@color/white" android:width="@dimen/shape_selector_released"/>
             <solid android:color="@color/blue_100"/>
-            <corners android:bottomLeftRadius="25dp"
-                android:topLeftRadius="25dp">
+            <corners
+                android:bottomLeftRadius="@dimen/round_shape_radius"
+                android:topLeftRadius="@dimen/round_shape_radius">
             </corners>
         </shape>
     </item>

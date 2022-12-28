@@ -11,7 +11,8 @@ interface JamendoApi {
     fun getTracksByTags(
         @Query("client_id") client_id: String,
         @Query("limit") limit: Int,
-        @Query("tags") tags: String,
+        @Query("offset") offset: Int,
+        @Query("fuzzytags") tags: String,
         @Query("include") include: String
     ): Observable<JamendoResult>
 }

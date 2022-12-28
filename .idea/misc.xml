@@ -4,27 +4,54 @@
     <option name="filePathToZoomLevelMap">
       <map>
         <entry key="..\:/Android_Projects/YourHandyPlayer/app/src/main/res/drawable/circular.xml" value="0.193" />
+        <entry key="..\:/Android_Projects/YourHandyPlayer/app/src/main/res/drawable/corner_background.xml" value="0.186" />
+        <entry key="..\:/Android_Projects/YourHandyPlayer/app/src/main/res/drawable/headset_anim.xml" value="0.1725" />
+        <entry key="..\:/Android_Projects/YourHandyPlayer/app/src/main/res/drawable/ic_baseline_favorite_24.xml" value="0.1925" />
         <entry key="..\:/Android_Projects/YourHandyPlayer/app/src/main/res/drawable/ic_baseline_menu_24.xml" value="0.324" />
+        <entry key="..\:/Android_Projects/YourHandyPlayer/app/src/main/res/drawable/ic_baseline_pause_24.xml" value="0.1955" />
         <entry key="..\:/Android_Projects/YourHandyPlayer/app/src/main/res/drawable/ic_baseline_play_arrow_24.xml" value="0.2315" />
         <entry key="..\:/Android_Projects/YourHandyPlayer/app/src/main/res/drawable/ic_baseline_play_arrow_64.xml" value="0.193" />
         <entry key="..\:/Android_Projects/YourHandyPlayer/app/src/main/res/drawable/ic_baseline_play_arrow_black_24.xml" value="0.193" />
         <entry key="..\:/Android_Projects/YourHandyPlayer/app/src/main/res/drawable/ic_baseline_play_circle_outline_24.xml" value="0.193" />
         <entry key="..\:/Android_Projects/YourHandyPlayer/app/src/main/res/drawable/ic_baseline_settings_24.xml" value="0.193" />
         <entry key="..\:/Android_Projects/YourHandyPlayer/app/src/main/res/drawable/ic_baseline_stop_24.xml" value="0.2315" />
+        <entry key="..\:/Android_Projects/YourHandyPlayer/app/src/main/res/drawable/ic_headset_yhp_1.xml" value="0.252" />
+        <entry key="..\:/Android_Projects/YourHandyPlayer/app/src/main/res/drawable/ic_headset_yhp_2.xml" value="0.266" />
+        <entry key="..\:/Android_Projects/YourHandyPlayer/app/src/main/res/drawable/ic_headset_yhp_3.xml" value="0.266" />
         <entry key="..\:/Android_Projects/YourHandyPlayer/app/src/main/res/drawable/ic_launcher_background.xml" value="0.193" />
+        <entry key="..\:/Android_Projects/YourHandyPlayer/app/src/main/res/drawable/ic_logo.xml" value="0.193" />
+        <entry key="..\:/Android_Projects/YourHandyPlayer/app/src/main/res/drawable/ic_outline_watch_later_24.xml" value="0.1875" />
+        <entry key="..\:/Android_Projects/YourHandyPlayer/app/src/main/res/drawable/ic_speaker_yhp_1.xml" value="0.266" />
+        <entry key="..\:/Android_Projects/YourHandyPlayer/app/src/main/res/drawable/ic_speaker_yhp_2.xml" value="0.266" />
+        <entry key="..\:/Android_Projects/YourHandyPlayer/app/src/main/res/drawable/ic_speaker_yhp_3.xml" value="0.266" />
+        <entry key="..\:/Android_Projects/YourHandyPlayer/app/src/main/res/drawable/ic_yhp_logo.xml" value="0.202" />
         <entry key="..\:/Android_Projects/YourHandyPlayer/app/src/main/res/drawable/image.xml" value="0.193" />
         <entry key="..\:/Android_Projects/YourHandyPlayer/app/src/main/res/drawable/left_shape.xml" value="0.193" />
         <entry key="..\:/Android_Projects/YourHandyPlayer/app/src/main/res/drawable/main_background.xml" value="0.1925" />
+        <entry key="..\:/Android_Projects/YourHandyPlayer/app/src/main/res/drawable/mainunder_background.xml" value="0.1635" />
         <entry key="..\:/Android_Projects/YourHandyPlayer/app/src/main/res/drawable/right_shape.xml" value="0.189" />
         <entry key="..\:/Android_Projects/YourHandyPlayer/app/src/main/res/drawable/round_button_shape.xml" value="0.192" />
+        <entry key="..\:/Android_Projects/YourHandyPlayer/app/src/main/res/drawable/round_selector_shape.xml" value="0.2305" />
         <entry key="..\:/Android_Projects/YourHandyPlayer/app/src/main/res/drawable/round_shape.xml" value="0.261" />
+        <entry key="..\:/Android_Projects/YourHandyPlayer/app/src/main/res/drawable/seek_bar.xml" value="0.1615" />
+        <entry key="..\:/Android_Projects/YourHandyPlayer/app/src/main/res/drawable/seek_thumb.xml" value="0.1615" />
+        <entry key="..\:/Android_Projects/YourHandyPlayer/app/src/main/res/drawable/speaker_anim.xml" value="0.1725" />
+        <entry key="..\:/Android_Projects/YourHandyPlayer/app/src/main/res/drawable/splash_image.xml" value="0.1865" />
+        <entry key="..\:/Android_Projects/YourHandyPlayer/app/src/main/res/layout-v26/fragment_tags_set.xml" value="0.18645833333333334" />
         <entry key="..\:/Android_Projects/YourHandyPlayer/app/src/main/res/layout/activity_main.xml" value="0.25" />
         <entry key="..\:/Android_Projects/YourHandyPlayer/app/src/main/res/layout/film_item.xml" value="0.175" />
-        <entry key="..\:/Android_Projects/YourHandyPlayer/app/src/main/res/layout/fragment_home.xml" value="0.25" />
-        <entry key="..\:/Android_Projects/YourHandyPlayer/app/src/main/res/layout/fragment_p_list.xml" value="0.22" />
+        <entry key="..\:/Android_Projects/YourHandyPlayer/app/src/main/res/layout/fragment_details.xml" value="0.225" />
+        <entry key="..\:/Android_Projects/YourHandyPlayer/app/src/main/res/layout/fragment_fullscreen_splash.xml" value="0.18177083333333333" />
+        <entry key="..\:/Android_Projects/YourHandyPlayer/app/src/main/res/layout/fragment_home.xml" value="0.22" />
+        <entry key="..\:/Android_Projects/YourHandyPlayer/app/src/main/res/layout/fragment_p_list.xml" value="0.18" />
+        <entry key="..\:/Android_Projects/YourHandyPlayer/app/src/main/res/layout/fragment_slash_screen.xml" value="0.1875" />
+        <entry key="..\:/Android_Projects/YourHandyPlayer/app/src/main/res/layout/fragment_splash_screen.xml" value="0.22" />
         <entry key="..\:/Android_Projects/YourHandyPlayer/app/src/main/res/layout/fragment_tags_set.xml" value="0.22" />
-        <entry key="..\:/Android_Projects/YourHandyPlayer/app/src/main/res/layout/track_item.xml" value="0.359375" />
+        <entry key="..\:/Android_Projects/YourHandyPlayer/app/src/main/res/layout/track_item.xml" value="0.25" />
+        <entry key="..\:/Android_Projects/YourHandyPlayer/app/src/main/res/layout/wave_element.xml" value="0.9" />
         <entry key="..\:/Android_Projects/YourHandyPlayer/app/src/main/res/menu/navigation.xml" value="0.184375" />
+        <entry key="..\:/Android_Projects/YourHandyPlayer/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml" value="0.157" />
+        <entry key="..\:/Android_Projects/YourHandyPlayer/app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml" value="0.157" />
       </map>
     </option>
   </component>

@@ -1,12 +1,11 @@
 package ru.ssnexus.yourhandyplayer.view.fragments
 
-import android.media.AudioManager
-import android.media.MediaPlayer
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
+import androidx.core.view.isEmpty
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -17,11 +16,12 @@ import io.reactivex.rxjava3.schedulers.Schedulers
 import ru.ssnexus.database_module.data.entity.JamendoTrackData
 import ru.ssnexus.mymoviesearcher.view.rv_adapters.TopSpacingItemDecoration
 import ru.ssnexus.mymoviesearcher.view.rv_adapters.TrackListRecyclerAdapter
-import ru.ssnexus.yourhandyplayer.App
-import ru.ssnexus.yourhandyplayer.databinding.ActivityMainBinding
+import ru.ssnexus.yourhandyplayer.R
+import ru.ssnexus.yourhandyplayer.data.preferences.PreferenceProvider
 import ru.ssnexus.yourhandyplayer.databinding.FragmentPListBinding
-import ru.ssnexus.yourhandyplayer.di.modules.remote_module.entity.jamendo.JamendoTrack
+import ru.ssnexus.yourhandyplayer.mediaplayer.HandyMediaPlayer
 import ru.ssnexus.yourhandyplayer.utils.AutoDisposable
+import ru.ssnexus.yourhandyplayer.utils.addTo
 import ru.ssnexus.yourhandyplayer.view.MainActivity
 import ru.ssnexus.yourhandyplayer.viewmodel.PListFragmentViewModel
 import timber.log.Timber
@@ -67,19 +67,59 @@ class PListFragment : Fragment() {
 
         // Инициализируем RecyclerView
         initRecycler()
+        initPlayer()
+        (requireActivity() as MainActivity).supportActionBar?.show()
+        (requireActivity() as MainActivity).title = "Play list"
+    }
+
+    override fun onStop() {
+        super.onStop()
+        (requireActivity() as MainActivity).let {
+            it.isHomeFragment(false)
+        }
+        bottomNavigationShow(false)
+    }
+
+    override fun onResume() {
+        super.onResume()
+        (requireActivity() as MainActivity).let {
+            if (it.handyMediaPlayer != null) {
+                if (it.handyMediaPlayer?.isPlaying() == true) bottomNavigationShow(true)
+            }
+            it.isHomeFragment(false)
+        }
     }
 
     private fun initRecycler(){
-        //находим наш RV
-
         binding.mainRecycler.apply {
 
              tracksAdapter = TrackListRecyclerAdapter(object : TrackListRecyclerAdapter.OnItemClickListener{
                 override fun click(track: JamendoTrackData) {
-
-                    (requireActivity() as MainActivity).setTrack(track)
+                    (requireActivity() as MainActivity).let {
+                        it.handyMediaPlayer?.let { hp ->
+                            hp.setTrack(track, false)
+                            setBottomNavigationTrack(track)
+                        }
+                    }
                 }
             })
+
+            tracksAdapter.registerAdapterDataObserver(object : RecyclerView.AdapterDataObserver(){
+                override fun onChanged() {
+                        super.onChanged()
+                        (requireActivity() as MainActivity).let {
+                            var pos = it.handyMediaPlayer?.getCurrTrackPos()
+                            if (pos != null) {
+                                if(pos >= 0) binding.mainRecycler.scrollToPosition(pos)
+                            }
+                            it.getHandyMedialayer()?.let {hmp->
+                                hmp.getCurrTrackData()?.let {
+                                        track -> setBottomNavigationTrack(track) }
+                            }
+                        }
+                    }
+                }
+            )
             //Присваиваем адаптер
             adapter = tracksAdapter
             //Присвоим layoutmanager
@@ -88,28 +128,75 @@ class PListFragment : Fragment() {
             val decorator = TopSpacingItemDecoration(8)
             addItemDecoration(decorator)
 
+            viewModel.tracksLiveData.observe(viewLifecycleOwner){
+                if(isAdded) tracksDataBase = it
+            }
 
-            viewModel.tracksData.subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe{tracks_data ->
-                    Timber.d("Data!!!")
-                    tracksDataBase = tracks_data
+            //Делаем refresh на swipe up
+            setOnTouchListener { view, motionEvent ->
+                if (motionEvent.action == android.view.MotionEvent.ACTION_UP) {
+                    if(isEmpty()) return@setOnTouchListener false
+                    if(viewModel.interactor.getMusicModeFromPreferences() != PreferenceProvider.TAGS_MODE) return@setOnTouchListener false
+                    val lManager = layoutManager
+                    if (lManager is LinearLayoutManager)
+                    {
+                        if(lManager.findLastCompletelyVisibleItemPosition() >= lManager.itemCount - 5)
+                        {
+                            //Делаем новый запрос трэков на сервер
+                            viewModel.getNextTracks()
+                        }
+                    }
                 }
+                return@setOnTouchListener false
+            }
+        }
+        viewModel.showProgressBar
+            .subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
+            .subscribe{
+                binding.progressBar.isVisible = it
+            }.addTo(autoDisposable)
+    }
 
-          //  viewModel.getTracksFromApi()
+
+    fun initPlayer() {
+        (requireActivity() as MainActivity).handyMediaPlayer?.let {
+            binding.trackControl.setOnClickListener(it.onClickListener)
+            it.playIconState?.observe(viewLifecycleOwner){
+                if (it) {
+                    binding.trackControl.setImageResource(R.drawable.ic_baseline_stop_24)
+                } else {
+                    binding.trackControl.setImageResource(R.drawable.ic_baseline_play_arrow_24)
+                }
+            }
         }
     }
 
-    override fun onStop() {
-        super.onStop()
-        (requireActivity() as MainActivity).bottomNavigationShow(false)
+    fun setBottomNavigationTrack(track: JamendoTrackData){
+        if ((requireActivity() as MainActivity).handyMediaPlayer?.isPlaying() == true){
+            bottomNavigationShow(flag = true)
+        }
+        else
+            bottomNavigationShow(flag = false)
+
+        binding.trackTitle.text = track.name
+
+        Glide.with(binding.bottomNavigation)
+            //Загружаем сам ресурс
+            .load(track.image)
+            //Центруем изображение
+            .centerCrop()
+            //Указываем ImageView, куда будем загружать изображение
+            .into(binding.artAvatar)
+
     }
 
-    override fun onResume() {
-        super.onResume()
-        (requireActivity() as MainActivity).let {
-            if(it.isPlaying()) it.bottomNavigationShow(true)
+    fun bottomNavigationShow(flag : Boolean){
+        if(flag) {
+            binding.bottomNavigation.visibility = View.VISIBLE
+            binding.bottomNavigation.layoutParams.height = resources.getDimension(R.dimen.toolbar_max_height).toInt()
+        }else{
+            binding.bottomNavigation.visibility = View.INVISIBLE
+            binding.bottomNavigation.layoutParams.height = resources.getDimension(R.dimen.toolbar_min_height).toInt()
         }
-
     }
 }

@@ -17,7 +17,8 @@
     <string name="no">No</string>
     <string name="cancel">Cancel</string>
     <string name="ok">Ok</string>
-    <string name="parcel_item_film">film</string>
+    <string name="parcel_item_track">TRACK</string>
+    <string name="parcel_item_tags">tags</string>
     <string name="is_empty_list">Your list is empty</string>
     <string name="poster_small">w342</string>
     <string name="poster_normal">w500</string>
@@ -30,11 +31,17 @@
     <string name="radio_button_playing">В кинотеатрах</string>
     <string name="radio_group_header">Подборка на главном экране:</string>
 
-    <string name="watch_later">Не забудьте посмотреть!</string>
+    <string name="listen_later">Не забудьте послушать!</string>
 
     <string name="permission_storage">Нет разрешения. Пожалуйста, предоставьте разрешение</string>
     <string name="downloaded_to_gallery">"Сохранено в галерею"</string>
     <string name="open">В галерею</string>
 
-    <string name="db_name">film_db</string>
+    <string name="favorites_cap">FAVORITES</string>
+    <string name="listen_later_cap">LISTEN LATER</string>
+
+
+    <string name="db_name">tracks_db</string>
+    <string name="dummy_button">Dummy Button</string>
+    <string name="dummy_content">DUMMY\nCONTENT</string>
 </resources>
