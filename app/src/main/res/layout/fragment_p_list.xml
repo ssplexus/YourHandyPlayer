@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -10,15 +10,44 @@
     tools:visibility="visible"
     tools:context=".view.fragments.PListFragment">
 
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/action_bar"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:background="@color/blue_100"
+            app:layout_constraintTop_toTopOf="parent">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/back_press"
+                    android:layout_width="50dp"
+                    android:layout_height="match_parent"
+                    app:layout_constraintLeft_toLeftOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:icon="@drawable/ic_baseline_arrow_back_24"
+                    app:iconSize="24dp"
+                    app:iconGravity="textStart"
+                    />
+                <TextView
+                    android:id="@+id/action_bar_title"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:textColor="@color/white"
+                    android:textSize="24sp"
+                    android:textStyle="bold"
+                    android:textAlignment="center"
+                    android:gravity="center"
+                    app:layout_constraintLeft_toLeftOf="parent"
+                    app:layout_constraintRight_toRightOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    />
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/main_recycler"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintLeft_toLeftOf="parent"
-            app:layout_constraintRight_toRightOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toBottomOf="@id/action_bar"
             tools:listitem="@layout/track_item" />
 
         <ProgressBar
@@ -26,7 +55,9 @@
             android:layout_width="@dimen/fragment_home_progressbar_layout_dimen"
             android:layout_height="@dimen/fragment_home_progressbar_layout_dimen"
             android:visibility="invisible"
-            android:layout_gravity="center"/>
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"/>
 
 
         <androidx.appcompat.widget.Toolbar
@@ -39,7 +70,7 @@
             app:itemIconTint="@android:color/white"
             app:itemTextColor="@android:color/white"
             app:labelVisibilityMode="labeled"
-            android:layout_gravity="bottom">
+            app:layout_constraintBottom_toBottomOf="parent">
 
                 <androidx.constraintlayout.widget.ConstraintLayout
                     android:layout_width="match_parent"
@@ -80,4 +111,4 @@
                 </androidx.constraintlayout.widget.ConstraintLayout>
         </androidx.appcompat.widget.Toolbar>
 
-</FrameLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -2,39 +2,32 @@ package ru.ssnexus.yourhandyplayer.mediaplayer
 
 import android.media.AudioManager
 import android.media.MediaPlayer
-import android.os.Handler
-import android.util.TypedValue
 import android.view.View
-import androidx.core.text.isDigitsOnly
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.MutableLiveData
-import com.bumptech.glide.Glide
-import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
-import io.reactivex.rxjava3.core.Observable
-import io.reactivex.rxjava3.schedulers.Schedulers
-import io.reactivex.rxjava3.subjects.BehaviorSubject
+import kotlinx.coroutines.*
 import ru.ssnexus.database_module.data.entity.JamendoTrackData
-import ru.ssnexus.yourhandyplayer.R
 import ru.ssnexus.yourhandyplayer.domain.Interactor
 import ru.ssnexus.yourhandyplayer.utils.SingleLiveEvent
 import timber.log.Timber
 import java.io.IOException
 import java.util.*
+import java.util.concurrent.Executors
 import javax.inject.Inject
-import kotlin.collections.ArrayList
-import kotlin.concurrent.scheduleAtFixedRate
-import kotlin.math.roundToInt
 
-class HandyMediaPlayer (val interactor: Interactor) {
+class HandyMediaPlayerSingle () {
+
+    //Инициализируем интерактор
+    @Inject
+    lateinit var interactor: Interactor
+
+    var scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
     var playIconState: MutableLiveData<Boolean> = MutableLiveData()
     var progress: MutableLiveData<Int> = MutableLiveData()
     var bufferingLevel: MutableLiveData<Int> = MutableLiveData()
     var duration: MutableLiveData<Int> = MutableLiveData()
 
-    var onSetTrackLiveEvent: MutableLiveData<Boolean> = MutableLiveData()
-
+    var onSetTrackLiveEvent: SingleLiveEvent<Boolean> = SingleLiveEvent()
     private val mediaPlayer: MediaPlayer = MediaPlayer()
     var onClickListener: View.OnClickListener? = null
 
@@ -45,61 +38,57 @@ class HandyMediaPlayer (val interactor: Interactor) {
 
     private var wave = arrayListOf<Int>()
 
-    var waveLiveData: MutableLiveData<Int> = MutableLiveData()
+    var waveLiveData: SingleLiveEvent<Int> = SingleLiveEvent()
 
-    private val timer: Timer = Timer()
-    private var waveTimer: Timer ?= null
     private var wavePos: Int = 0
 
     init {
         initPlayer()
     }
 
-    private fun onStartTimer(){
-        timer.scheduleAtFixedRate(0,1000) {
-            if (isOnPlaying) progress.postValue(mediaPlayer.currentPosition)
+    private fun onStartProgress(){
+        Timber.d("onStartProgress")
+        scope.launch {
+            Timber.d("scope.launch 1")
+            while(true){
+                delay(1000)
+                progress.postValue(mediaPlayer.currentPosition)
+            }
         }
-    }
-
-    private fun onStartWaveTimer(duration : Int){
-
-        if(waveTimer != null) onStopWaveTimer()
-        waveTimer = Timer()
-        wavePos = 0
-
-        if(wave.isEmpty()) return
-        val period = duration / wave.size
-
-        if(period > 0)
-        waveTimer?.scheduleAtFixedRate(0,period.toLong()) {
-            if (isOnPlaying) {
-                if(!wave.isEmpty()) {
-                    var pos = (mediaPlayer.currentPosition.toFloat() / period).roundToInt()
-                     if(wavePos != pos && pos !=0){
-                         wavePos = pos
-                         if(wavePos < wave.size){
-                             waveLiveData.postValue( wave[wavePos])
-                         }
-                     }
-
+        scope.launch {
+            Timber.d("scope.launch 2")
+            if(!wave.isEmpty()) {
+            val period = mediaPlayer.duration / wave.size
+            if(period > 0)
+                while (true){
+                    delay(period.toLong())
+                    val pos = mediaPlayer.currentPosition / period
+                    if(wavePos != pos && pos !=0){
+                        wavePos = pos
+                        if(wavePos < wave.size){
+                            waveLiveData.postValue( wave[wavePos])
+                        }
+                    }
                 }
             }
         }
     }
 
-    private fun onStopWaveTimer(){
-        waveTimer?.let {
-            it.cancel()
-            it.purge()
-        }
-        waveTimer = null
+    private fun onStopProgress(){
+        scope.cancel()
+        scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
     }
+
+    fun setIsOnPlaying(flag:Boolean){
+        isOnPlaying = flag
+    }
+
+    fun isOnPlaying() = isOnPlaying
 
     fun setTrackList(list:List<JamendoTrackData>){
         if(mediaPlayer.isPlaying) mediaPlayer.pause()
         isOnPlaying = false
         playIconState.postValue(false)
-
         trackList = list
     }
 
@@ -107,22 +96,21 @@ class HandyMediaPlayer (val interactor: Interactor) {
         currTrack = track
         if(currTrack != null)
         {
-            onSetTrackLiveEvent.postValue(true)
             currTrack?.let {
                 val waveForm = it.waveform
                 wave = waveForm.split(",").map { it.replace(Regex("[^0-9]"), "").toInt() } as ArrayList<Int>
             }
-
-            mediaPlayer?.let {
+            onSetTrackLiveEvent.postValue(true)
+            mediaPlayer.let {
                 if(it.isPlaying) it.stop()
                 it.reset()
                 try{
                     it.setDataSource(currTrack?.audio)
                     if (async) it.prepareAsync()
-                          else {
-                                it.prepare()
-                                togglePlayPause()
-                          }
+                    else {
+                        it.prepare()
+                        togglePlayPause()
+                    }
                 }
                 catch (e: IOException){
                     e.printStackTrace()
@@ -131,14 +119,14 @@ class HandyMediaPlayer (val interactor: Interactor) {
         }
     }
 
+
+
     fun getCurrTrackPos() : Int {
         if (isSetTrack()) {
             return trackList.indexOf(currTrack)
         }
         else return -1
     }
-
-    fun getCurrTrackData() = currTrack
 
     fun getTrackDataByPos(pos: Int): JamendoTrackData?{
         if(trackList.isEmpty()) return null
@@ -150,14 +138,11 @@ class HandyMediaPlayer (val interactor: Interactor) {
 
     fun onPlay() {
         if(trackList.isEmpty()) return
-        if (!isPlaying()) {
+        if( !isSetTrack()) trackList?.first().let {
             isOnPlaying = true
-            if( !isSetTrack()) trackList?.first().let { setTrack(it) }
-            else togglePlayPause()
+            setTrack(it)
         }
-        else {
-            togglePlayPause()
-        }
+        else togglePlayPause()
     }
 
     fun onNextTrack() {
@@ -176,28 +161,21 @@ class HandyMediaPlayer (val interactor: Interactor) {
         setTrack(trackList.get(pos))
     }
 
-    fun isPlaying(): Boolean {
-        var result = false
-        if(mediaPlayer != null)
-        {
-            result = mediaPlayer.isPlaying
-        }
-        return result
-    }
+    fun isPlaying() = mediaPlayer.isPlaying
 
     fun togglePlayPause(){
-        mediaPlayer?.let {
+        mediaPlayer.let {
             if(it.isPlaying){
+                playIconState.postValue(false)
                 it.pause()
                 isOnPlaying = false
-                onStopWaveTimer()
-                playIconState.postValue(false)
-            }else{
-                it.start()
-                onStartWaveTimer(it.duration)
-                isOnPlaying = true
-                playIconState.postValue(true)
+                onStopProgress()
 
+            }else{
+                playIconState.postValue(true)
+                it.start()
+                onStartProgress()
+                isOnPlaying = true
             }
         }
     }
@@ -209,7 +187,7 @@ class HandyMediaPlayer (val interactor: Interactor) {
         playIconState.postValue(false)
         mediaPlayer.let {
             it.setOnBufferingUpdateListener { mp, percent ->
-                var ratio: Float = percent / 100.0f
+                val ratio: Float = percent / 100.0f
                 val result = mp.duration * ratio
                 bufferingLevel.postValue(result.toInt())
             }
@@ -218,8 +196,7 @@ class HandyMediaPlayer (val interactor: Interactor) {
                 progress.postValue(0)
                 bufferingLevel.postValue(0)
                 duration.postValue(it.duration)
-                onStartTimer()
-                if (isOnPlaying) togglePlayPause()
+                if(isOnPlaying) togglePlayPause()
             }
             it.setOnCompletionListener {
                 onNextTrack()
@@ -228,6 +205,8 @@ class HandyMediaPlayer (val interactor: Interactor) {
 
     }
 
+    fun getCurrTrack() = currTrack
+
     fun getMediaPlayer() = mediaPlayer
 
     fun onDestroy() {
@@ -235,7 +214,5 @@ class HandyMediaPlayer (val interactor: Interactor) {
             if(mediaPlayer.isPlaying == true) mediaPlayer.stop()
             mediaPlayer.release()
         }
-        timer.cancel()
-        timer.purge()
     }
 }

@@ -111,18 +111,18 @@ class TagsSetFragment : Fragment() {
             }
         })
 
-        (requireActivity() as MainActivity).supportActionBar?.show()
-        (requireActivity() as MainActivity).title = "Choose tags"
+        binding.backPress.setOnClickListener {
+            (requireActivity() as MainActivity).onBackPressed()
+        }
+        binding.actionBarTitle.text = "Tags"
     }
 
     override fun onResume() {
         super.onResume()
-        (requireActivity() as MainActivity).isHomeFragment(false)
     }
 
     override fun onStop() {
         super.onStop()
-        (requireActivity() as MainActivity).isHomeFragment(false)
     }
 
     fun setTags(){

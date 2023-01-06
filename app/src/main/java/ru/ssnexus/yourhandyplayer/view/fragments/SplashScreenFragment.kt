@@ -37,9 +37,7 @@ class SplashScreenFragment : Fragment(), CoroutineScope {
         launch {
             delay(1500)
             withContext(Dispatchers.Main){
-                (activity as MainActivity).let {
-                    it.launchStartFragment()
-                }
+                (activity as MainActivity).launchStartFragment()
             }
         }
     }

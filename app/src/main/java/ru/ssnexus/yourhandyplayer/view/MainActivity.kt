@@ -12,6 +12,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.MutableLiveData
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import ru.ssnexus.database_module.data.entity.JamendoTrackData
 import ru.ssnexus.yourhandyplayer.App
@@ -19,12 +20,13 @@ import ru.ssnexus.yourhandyplayer.R
 import ru.ssnexus.yourhandyplayer.data.preferences.PreferenceProvider
 import ru.ssnexus.yourhandyplayer.databinding.ActivityMainBinding
 import ru.ssnexus.yourhandyplayer.domain.Interactor
-import ru.ssnexus.yourhandyplayer.mediaplayer.HandyMediaPlayer
+import ru.ssnexus.yourhandyplayer.mediaplayer.HandyMediaPlayerSingle
 import ru.ssnexus.yourhandyplayer.receivers.ConnectionChecker
 import ru.ssnexus.yourhandyplayer.utils.AutoDisposable
 import ru.ssnexus.yourhandyplayer.view.fragments.DetailsFragment
 import ru.ssnexus.yourhandyplayer.view.fragments.HomeFragment
 import ru.ssnexus.yourhandyplayer.view.fragments.SplashScreenFragment
+import timber.log.Timber
 import java.util.concurrent.Executors
 import javax.inject.Inject
 
@@ -32,6 +34,8 @@ class MainActivity : AppCompatActivity() {
 
     @Inject
     lateinit var interactor: Interactor
+
+
     private lateinit var binding: ActivityMainBinding
     private lateinit var receiver: BroadcastReceiver
     private lateinit var tracksLiveData : MutableLiveData<List<JamendoTrackData>>
@@ -43,7 +47,7 @@ class MainActivity : AppCompatActivity() {
 
     val autoDisposable = AutoDisposable()
 
-    var handyMediaPlayer: HandyMediaPlayer? = null
+    val handyMediaPlayer = HandyMediaPlayerSingle()
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -69,7 +73,7 @@ class MainActivity : AppCompatActivity() {
         // Регистрация приёмника
         registerReceiver(receiver, filters)
 
-        supportActionBar?.hide()
+//        supportActionBar?.hide()
         title = ""
         //Запускаем фрагмент при старте
 
@@ -108,6 +112,10 @@ class MainActivity : AppCompatActivity() {
         interactor.initDataObservers(this)
         tracksLiveData = interactor.getTracksLiveData()
 
+        tracksLiveData.observe(this){
+            handyMediaPlayer.setTrackList(it)
+        }
+
         when(interactor.getMusicModeFromPreferences()){
             PreferenceProvider.TAGS_MODE -> {
                 interactor.setTagsPref()
@@ -119,30 +127,6 @@ class MainActivity : AppCompatActivity() {
                 interactor.setListenLaterPref()
             }
         }
-        initPlayer()
-    }
-
-
-    fun initPlayer(){
-        handyMediaPlayer = HandyMediaPlayer(interactor)
-        tracksLiveData.observe(this){
-            handyMediaPlayer?.setTrackList(it)
-        }
-    }
-
-    fun isHomeFragment(flag: Boolean){
-
-        isHome = flag
-        var actionBar = getSupportActionBar()
-        if (actionBar != null)
-            if (!flag)
-            {
-                actionBar.setDisplayHomeAsUpEnabled(true)
-                actionBar.setDisplayShowHomeEnabled(true)
-            } else {
-                actionBar.setDisplayHomeAsUpEnabled(false)
-                actionBar.setDisplayShowHomeEnabled(false)
-            }
     }
 
     override fun onSupportNavigateUp(): Boolean {
@@ -232,18 +216,12 @@ class MainActivity : AppCompatActivity() {
             super.onBackPressed()
     }
 
-
-
-
     fun isWiredHeadsetOn() = audioManager.isWiredHeadsetOn
 
     fun getHandyMedialayer() = handyMediaPlayer
 
     override fun onDestroy() {
         super.onDestroy()
-        if(handyMediaPlayer != null) {
-            handyMediaPlayer?.onDestroy()
-            handyMediaPlayer = null
-        }
+        handyMediaPlayer.onDestroy()
     }
 }

@@ -19,12 +19,10 @@ import ru.ssnexus.mymoviesearcher.view.rv_adapters.TrackListRecyclerAdapter
 import ru.ssnexus.yourhandyplayer.R
 import ru.ssnexus.yourhandyplayer.data.preferences.PreferenceProvider
 import ru.ssnexus.yourhandyplayer.databinding.FragmentPListBinding
-import ru.ssnexus.yourhandyplayer.mediaplayer.HandyMediaPlayer
 import ru.ssnexus.yourhandyplayer.utils.AutoDisposable
 import ru.ssnexus.yourhandyplayer.utils.addTo
 import ru.ssnexus.yourhandyplayer.view.MainActivity
 import ru.ssnexus.yourhandyplayer.viewmodel.PListFragmentViewModel
-import timber.log.Timber
 
 class PListFragment : Fragment() {
 
@@ -68,25 +66,23 @@ class PListFragment : Fragment() {
         // Инициализируем RecyclerView
         initRecycler()
         initPlayer()
-        (requireActivity() as MainActivity).supportActionBar?.show()
-        (requireActivity() as MainActivity).title = "Play list"
+        binding.backPress.setOnClickListener {
+            (requireActivity() as MainActivity).onBackPressed()
+        }
+        binding.actionBarTitle.text = "Play list"
     }
 
     override fun onStop() {
         super.onStop()
-        (requireActivity() as MainActivity).let {
-            it.isHomeFragment(false)
-        }
         bottomNavigationShow(false)
     }
 
     override fun onResume() {
         super.onResume()
         (requireActivity() as MainActivity).let {
-            if (it.handyMediaPlayer != null) {
-                if (it.handyMediaPlayer?.isPlaying() == true) bottomNavigationShow(true)
+            if (it.getHandyMedialayer() != null) {
+                if (it.getHandyMedialayer().isPlaying() == true) bottomNavigationShow(true)
             }
-            it.isHomeFragment(false)
         }
     }
 
@@ -96,8 +92,9 @@ class PListFragment : Fragment() {
              tracksAdapter = TrackListRecyclerAdapter(object : TrackListRecyclerAdapter.OnItemClickListener{
                 override fun click(track: JamendoTrackData) {
                     (requireActivity() as MainActivity).let {
-                        it.handyMediaPlayer?.let { hp ->
-                            hp.setTrack(track, false)
+                        it.getHandyMedialayer().let { hp ->
+                            hp.setIsOnPlaying(true)
+                            hp.setTrack(track)
                             setBottomNavigationTrack(track)
                         }
                     }
@@ -107,15 +104,12 @@ class PListFragment : Fragment() {
             tracksAdapter.registerAdapterDataObserver(object : RecyclerView.AdapterDataObserver(){
                 override fun onChanged() {
                         super.onChanged()
-                        (requireActivity() as MainActivity).let {
-                            var pos = it.handyMediaPlayer?.getCurrTrackPos()
-                            if (pos != null) {
-                                if(pos >= 0) binding.mainRecycler.scrollToPosition(pos)
-                            }
-                            it.getHandyMedialayer()?.let {hmp->
-                                hmp.getCurrTrackData()?.let {
+                        (requireActivity() as MainActivity).getHandyMedialayer().let {
+                            var pos = it.getCurrTrackPos()
+                            if(pos >= 0) binding.mainRecycler.scrollToPosition(pos)
+
+                            it.getCurrTrack()?.let {
                                         track -> setBottomNavigationTrack(track) }
-                            }
                         }
                     }
                 }
@@ -157,11 +151,10 @@ class PListFragment : Fragment() {
             }.addTo(autoDisposable)
     }
 
-
     fun initPlayer() {
-        (requireActivity() as MainActivity).handyMediaPlayer?.let {
+        (requireActivity() as MainActivity).getHandyMedialayer().let {
             binding.trackControl.setOnClickListener(it.onClickListener)
-            it.playIconState?.observe(viewLifecycleOwner){
+            it.playIconState.observe(viewLifecycleOwner){
                 if (it) {
                     binding.trackControl.setImageResource(R.drawable.ic_baseline_stop_24)
                 } else {
@@ -172,9 +165,8 @@ class PListFragment : Fragment() {
     }
 
     fun setBottomNavigationTrack(track: JamendoTrackData){
-        if ((requireActivity() as MainActivity).handyMediaPlayer?.isPlaying() == true){
+        if ((requireActivity() as MainActivity).getHandyMedialayer().isOnPlaying() == true)
             bottomNavigationShow(flag = true)
-        }
         else
             bottomNavigationShow(flag = false)
 
@@ -187,7 +179,6 @@ class PListFragment : Fragment() {
             .centerCrop()
             //Указываем ImageView, куда будем загружать изображение
             .into(binding.artAvatar)
-
     }
 
     fun bottomNavigationShow(flag : Boolean){
