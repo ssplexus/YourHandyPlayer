@@ -1,5 +1,10 @@
 package ru.ssnexus.yourhandyplayer.domain
 
+import android.bluetooth.BluetoothAdapter
+import android.bluetooth.BluetoothHeadset
+import android.content.Context
+import android.media.AudioManager
+import androidx.core.content.ContextCompat.getSystemService
 import androidx.lifecycle.MutableLiveData
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.kotlin.subscribeBy
@@ -10,14 +15,14 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import ru.ssnexus.database_module.data.MainRepository
 import ru.ssnexus.database_module.data.entity.JamendoTrackData
+import ru.ssnexus.yourhandyplayer.App
 import ru.ssnexus.yourhandyplayer.data.API
 import ru.ssnexus.yourhandyplayer.data.preferences.PreferenceProvider
 import ru.ssnexus.yourhandyplayer.di.modules.remote_module.JamendoApi
-import ru.ssnexus.yourhandyplayer.utils.AutoDisposable
 import ru.ssnexus.yourhandyplayer.utils.Converter
 import ru.ssnexus.yourhandyplayer.utils.addTo
 import ru.ssnexus.yourhandyplayer.view.MainActivity
-import timber.log.Timber
+
 
 class Interactor(val repo: MainRepository, val retrofitService: JamendoApi, private val preferences: PreferenceProvider) {
 
@@ -145,6 +150,16 @@ class Interactor(val repo: MainRepository, val retrofitService: JamendoApi, priv
     //Получить время первого запуска
     fun getFirstLaunchTime() = preferences.getFirstLaunchTime()
 
+    fun isBluetoothHeadsetConnected(): Boolean {
+        val mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
+        return (mBluetoothAdapter != null && mBluetoothAdapter.isEnabled
+                && mBluetoothAdapter.getProfileConnectionState(BluetoothHeadset.HEADSET) == BluetoothHeadset.STATE_CONNECTED)
+    }
+
+    fun isWiredHeadsetOn(): Boolean {
+        val audioManager = App.instance.getSystemService(Context.AUDIO_SERVICE) as AudioManager
+        return audioManager.isWiredHeadsetOn
+    }
 }
 
 

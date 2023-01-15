@@ -8,8 +8,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.SeekBar
-import androidx.annotation.Dimension
-import androidx.annotation.RequiresApi
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
@@ -18,12 +16,17 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.schedulers.Schedulers
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.cancel
 import ru.ssnexus.database_module.data.entity.JamendoTrackData
 import ru.ssnexus.mymoviesearcher.view.rv_adapters.TopSpacingItemDecoration
 import ru.ssnexus.mymoviesearcher.view.rv_adapters.TrackListRecyclerAdapter
 import ru.ssnexus.yourhandyplayer.R
 import ru.ssnexus.yourhandyplayer.data.preferences.PreferenceProvider
 import ru.ssnexus.yourhandyplayer.databinding.FragmentHomeBinding
+import ru.ssnexus.yourhandyplayer.mediaplayer.HandyMediaPlayerSingle
 import ru.ssnexus.yourhandyplayer.utils.AutoDisposable
 import ru.ssnexus.yourhandyplayer.utils.addTo
 import ru.ssnexus.yourhandyplayer.view.MainActivity
@@ -34,14 +37,9 @@ import java.text.SimpleDateFormat
 
 class HomeFragment : Fragment() {
 
-    companion object{
-        const val WAVE_STRIPS_CNT = 10
-    }
-
     private var bundle: Bundle? = null
     private lateinit var binding: FragmentHomeBinding
     private lateinit var tracksAdapter: TrackListRecyclerAdapter
-    private lateinit var playAnimation: AnimationDrawable
 
     private var tracksDataBase = listOf<JamendoTrackData>()
         //Используем backing field
@@ -55,9 +53,7 @@ class HomeFragment : Fragment() {
         }
 
     private val autoDisposable = AutoDisposable()
-
-    private var waveNum: Int = WAVE_STRIPS_CNT
-    private var maxWaveHeight = 0
+    private val scope = CoroutineScope(Dispatchers.IO + Job())
 
     private val viewModel by lazy {
         ViewModelProvider.NewInstanceFactory().create(HomeFragmentViewModel::class.java)
@@ -75,6 +71,9 @@ class HomeFragment : Fragment() {
     ): View? {
         // Inflate the layout for this fragment
         binding = FragmentHomeBinding.inflate(inflater, container, false)
+
+        Timber.d("onCreateView")
+
         return binding.root
     }
 
@@ -83,60 +82,94 @@ class HomeFragment : Fragment() {
         bundle = savedInstanceState
 
         viewModel.tags = arguments?.get(R.string.parcel_item_tags.toString()).toString()
-
+        Timber.d("onViewCreated")
         initWaveForm()
         initRecycler()
         initSeekBar()
         initButtons()
-//        (requireActivity() as MainActivity).supportActionBar?.hide()
-        (requireActivity() as MainActivity).title = "Home page"
-
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
+        Timber.d("HomeFragment:onSaveInstanceState Called")
     }
 
     override fun onResume() {
         super.onResume()
-        (requireActivity() as MainActivity).isHomeFragment(true)
     }
 
     override fun onStop() {
         super.onStop()
-        (requireActivity() as MainActivity).isHomeFragment(true)
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        Timber.d("OnDestroy")
+        scope.cancel()
     }
 
     fun initWaveForm() {
-        (requireActivity() as MainActivity).handyMediaPlayer?.let {
+        binding.waveForm.post {
+            HandyMediaPlayerSingle.instance.let {
+                var pos = it.getWaveDataPos()
+
+                var strVal : String = ""
+                for (i in binding.waveForm.childCount - 1 downTo 0 step 1) {
+                    if (pos < 0) binding.waveForm.getChildAt(i).layoutParams.height =
+                                    resources.getDimension(R.dimen.wave_height).toInt()
+                    else {
+                        strVal += it.getWaveData()[pos]
+                        strVal += " "
+                        binding.waveForm.getChildAt(i).layoutParams.height =
+                            getWaveHeight(it.getWaveData()[pos--], binding.waveForm.height,
+                                resources.getDimension(R.dimen.wave_height).toInt())
+                    }
+                }
+                Timber.d("Recover wave state " + strVal)
+            }
+        }
+
+        HandyMediaPlayerSingle.instance.let {
             it.onSetTrackLiveEvent.observe(viewLifecycleOwner) {
+                Timber.d("onSetTrackLiveEvent")
                 for (i in binding.waveForm.childCount - 1 downTo 0 step 1) {
                     binding.waveForm.getChildAt(i).layoutParams.height =
                         resources.getDimension(R.dimen.wave_height).toInt()
                 }
             }
-
-            it.waveLiveData?.observe(viewLifecycleOwner){
-
-                val dip = it.toFloat()
-                var px = TypedValue.applyDimension(
-                    TypedValue.COMPLEX_UNIT_DIP,
-                    dip,
-                    resources.displayMetrics
-                )
-                var dim = px.toInt()
-
-                maxWaveHeight = binding.waveForm.measuredHeight
-                if(dim < resources.getDimension(R.dimen.wave_height).toInt())
-                    dim = resources.getDimension(R.dimen.wave_height).toInt()
-                else if(dim > maxWaveHeight)
-                    dim = maxWaveHeight
-
-                binding.waveForm.getChildAt(--waveNum).layoutParams.height = dim
-
-                if (waveNum <= 0) waveNum = WAVE_STRIPS_CNT
+            it.waveLiveData.observe(viewLifecycleOwner){
+//                Timber.d("it.waveLiveData.observe" + it)
+                for (i in binding.waveForm.childCount - 1 downTo 1 step 1) {
+                    binding.waveForm.getChildAt(i - 1).layoutParams.height = binding.waveForm.getChildAt(i).height
+                }
+                binding.waveForm.getChildAt(binding.waveForm.childCount - 1).layoutParams.height = getWaveHeight(it, binding.waveForm.measuredHeight, resources.getDimension(R.dimen.wave_height).toInt())
             }
+//            val waveDataFlowCollect = it.waveDataFlow.asSharedFlow()
+//            scope.launch {
+//                waveDataFlowCollect.collect{
+////                    Timber.d("waveLiveData")
+//                    binding.waveForm.getChildAt(--waveNum).layoutParams.height = getWaveHeight(it, binding.waveForm.measuredHeight, resources.getDimension(R.dimen.wave_height).toInt())
+//                    if (waveNum <= 0) waveNum = HomeFragmentViewModel.WAVE_STRIPS_CNT
+//                }
+//            }
         }
+    }
+
+    fun getWaveHeight(value: Int, maxHeight: Int, minHeight: Int): Int {
+
+        val dip = value.toFloat()
+        val px = TypedValue.applyDimension(
+            TypedValue.COMPLEX_UNIT_DIP,
+            dip,
+            resources.displayMetrics
+        )
+        var dim = px.toInt()
+
+        if(dim < minHeight)
+            dim = minHeight
+        else if(dim > maxHeight)
+            dim = maxHeight
+        return dim
     }
 
     private fun initButtons(){
@@ -153,31 +186,29 @@ class HomeFragment : Fragment() {
         }
 
         binding.forwardButton.setOnClickListener {
-            (requireActivity() as MainActivity).handyMediaPlayer?.onNextTrack()
-            (requireActivity() as MainActivity).handyMediaPlayer?.getCurrTrackPos()
-                ?.let { it1 -> binding.mainRecycler.scrollToPosition(it1)
+            HandyMediaPlayerSingle.instance.onNextTrack()
+            HandyMediaPlayerSingle.instance.getCurrTrackPos()
+                .let { binding.mainRecycler.scrollToPosition(it)
                 }
         }
         binding.backwardButton.setOnClickListener {
-            (requireActivity() as MainActivity).handyMediaPlayer?.onPrevTrack()
-            (requireActivity() as MainActivity).handyMediaPlayer?.getCurrTrackPos()
-                ?.let{it1 -> binding.mainRecycler.scrollToPosition(it1) }
+            HandyMediaPlayerSingle.instance.onPrevTrack()
+            HandyMediaPlayerSingle.instance.getCurrTrackPos()
+                .let{ binding.mainRecycler.scrollToPosition(it) }
         }
         binding.playButton.setOnClickListener {
-            (requireActivity() as MainActivity).handyMediaPlayer?.onPlay()
+            HandyMediaPlayerSingle.instance.onPlay()
         }
 
-        if ((requireActivity() as MainActivity).handyMediaPlayer != null) {
-            (requireActivity() as MainActivity).handyMediaPlayer?.let {
-                it.playIconState.observe (viewLifecycleOwner){
-                    if (it) {
-                        binding.playButton.setIconResource(R.drawable.ic_baseline_pause_24)
-                        playAnimation.start()
-                    } else {
-                        binding.playButton.setIconResource(R.drawable.ic_baseline_play_arrow_24)
-                        playAnimation.stop()
-                        playAnimation.selectDrawable(0)
-                    }
+        HandyMediaPlayerSingle.instance.let {
+            it.playIconState.observe (viewLifecycleOwner){
+                if (it) {
+                    binding.playButton.setIconResource(R.drawable.ic_baseline_pause_24)
+                    (binding.playAnimation.drawable as AnimationDrawable).start()
+                } else {
+                    binding.playButton.setIconResource(R.drawable.ic_baseline_play_arrow_24)
+                    (binding.playAnimation.drawable as AnimationDrawable).stop()
+                    (binding.playAnimation.drawable as AnimationDrawable).selectDrawable(0)
                 }
             }
         }
@@ -217,13 +248,15 @@ class HomeFragment : Fragment() {
             }
         }
 
-        binding.playAnimation.apply {
-            if((requireActivity() as MainActivity).isWiredHeadsetOn())
-                setImageResource(R.drawable.headset_anim)
-            else
-                setImageResource(R.drawable.headset_anim)
-//                setImageResource(R.drawable.speaker_anim)
-            playAnimation = drawable as AnimationDrawable
+        binding.playAnimation.post{
+            binding.playAnimation.apply {
+                if(viewModel.interactor.isWiredHeadsetOn() || viewModel.interactor.isBluetoothHeadsetConnected()) {
+                    Timber.d("isBluetoothHeadsetConnected")
+                    setImageResource(R.drawable.headset_anim)
+                }
+                else
+                    setImageResource(R.drawable.speaker_anim)
+            }
         }
 
         viewModel.connectedDeviceTypeLiveData.observe(viewLifecycleOwner){
@@ -231,53 +264,50 @@ class HomeFragment : Fragment() {
         }
     }
 
-    private fun initSeekBar(){
-
-        if ((requireActivity() as MainActivity).handyMediaPlayer != null) {
-            (requireActivity() as MainActivity).handyMediaPlayer?.let {
-                binding.seekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener{
-                    override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
-                        if (fromUser) {
-                            it.getMediaPlayer()
-                                ?.seekTo(progress)
-                            seekBar?.setProgress(progress)
-                        }
-                    }
-
-                    override fun onStartTrackingTouch(seekBar: SeekBar?) {
-                        //seekBarHint.setVisibility(View.VISIBLE);
-                    }
-
-                    override fun onStopTrackingTouch(seekBar: SeekBar?) {
-                        if(it.isPlaying()) if (seekBar != null) {
-                            it.getMediaPlayer().seekTo(seekBar.progress)
-                        }
-                    }
-                })
-
-                it.duration.observe(viewLifecycleOwner){
-                    binding.seekBar.max = it
-                    binding.seekBar.secondaryProgress = 0
-                    binding.playerTotalTimeText.text = msecToTimeStamp(it)
-
-                }
-
-                it.bufferingLevel.observe(viewLifecycleOwner){
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                        binding.seekBar.secondaryProgress = it
+    private fun initSeekBar() {
+        HandyMediaPlayerSingle.instance.let {
+            binding.seekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener{
+                override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+                    if (fromUser) {
+                        it.getMediaPlayer().seekTo(progress)
+                        seekBar?.setProgress(progress)
                     }
                 }
-                it.progress.observe(viewLifecycleOwner){
-                    binding.playerCurrentTimeText.text = msecToTimeStamp(it)
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                        binding.seekBar.setProgress(it, false)
+
+                override fun onStartTrackingTouch(seekBar: SeekBar?) {
+                    //seekBarHint.setVisibility(View.VISIBLE);
+                }
+
+                override fun onStopTrackingTouch(seekBar: SeekBar?) {
+                    if(it.isPlaying()) if (seekBar != null) {
+                        it.getMediaPlayer().seekTo(seekBar.progress)
+                        it.updateWavePosition()
                     }
+                }
+            })
+
+            it.duration.observe(viewLifecycleOwner){
+                binding.seekBar.max = it
+                binding.seekBar.secondaryProgress = 0
+                binding.playerTotalTimeText.text = msecToTimeStamp(it)
+
+            }
+
+            it.bufferingLevel.observe(viewLifecycleOwner){
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                    binding.seekBar.secondaryProgress = it
+                }
+            }
+            it.progress.observe(viewLifecycleOwner){
+                binding.playerCurrentTimeText.text = msecToTimeStamp(it)
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                    binding.seekBar.setProgress(it, false)
                 }
             }
         }
     }
 
-    fun msecToTimeStamp(msec: Int): String {
+    private fun msecToTimeStamp(msec: Int): String {
         val formatter = SimpleDateFormat("mm:ss")
         return formatter.format(msec)
     }
@@ -304,19 +334,16 @@ class HomeFragment : Fragment() {
                 override fun onChanged() {
                     super.onChanged()
                     if(tracksAdapter.itemCount < 2) return
-                    if ((requireActivity() as MainActivity).getHandyMedialayer() != null) {
+                    var pos = HandyMediaPlayerSingle.instance.getCurrTrackPos()
+                    if(pos >= 0) binding.mainRecycler.scrollToPosition(pos)
 
-                        var pos = (requireActivity() as MainActivity).getHandyMedialayer()?.getCurrTrackPos()?:0
-                        if(pos >= 0) binding.mainRecycler.scrollToPosition(pos)
-
-                        val lManager = layoutManager
-                        if (lManager is LinearLayoutManager)
+                    val lManager = layoutManager
+                    if (lManager is LinearLayoutManager)
+                    {
+                        if(lManager.findLastCompletelyVisibleItemPosition() >= lManager.itemCount - 1)
                         {
-                            if(lManager.findLastCompletelyVisibleItemPosition() >= lManager.itemCount - 1)
-                            {
-                                //Делаем новый запрос трэков на сервер
-                                viewModel.getNextTracks()
-                            }
+                            //Делаем новый запрос трэков на сервер
+                            viewModel.getNextTracks()
                         }
                     }
                 }
@@ -328,7 +355,9 @@ class HomeFragment : Fragment() {
 
             viewModel.tagsPropertyLiveData.observe(viewLifecycleOwner, Observer<String> {
                 if(viewModel.getMusicMode() == PreferenceProvider.TAGS_MODE) {
+                    Timber.d("viewModel.tags=" + viewModel.tags)
                     if(!viewModel.tags.isBlank())
+                        if(!viewModel.tags.equals("null"))
                             viewModel.updateTracks(it)
                 }
             })
@@ -357,4 +386,5 @@ class HomeFragment : Fragment() {
                 }.addTo(autoDisposable)
         }
     }
+
 }
