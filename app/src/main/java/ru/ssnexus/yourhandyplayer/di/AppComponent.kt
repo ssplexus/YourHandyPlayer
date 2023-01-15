@@ -1,12 +1,10 @@
 package ru.ssnexus.yourhandyplayer.di
 
-import android.content.BroadcastReceiver
 import dagger.Component
 import ru.ssnexus.mymoviesearcher.view.rv_viewholders.TrackViewHolder
 import ru.ssnexus.yourhandyplayer.di.modules.DomainModule
 import ru.ssnexus.yourhandyplayer.di.modules.database_module.DatabaseModule
 import ru.ssnexus.yourhandyplayer.di.modules.remote_module.RemoteModule
-import ru.ssnexus.yourhandyplayer.mediaplayer.HandyMediaPlayer
 import ru.ssnexus.yourhandyplayer.mediaplayer.HandyMediaPlayerSingle
 import ru.ssnexus.yourhandyplayer.receivers.ConnectionChecker
 import ru.ssnexus.yourhandyplayer.receivers.ReminderBroadcast

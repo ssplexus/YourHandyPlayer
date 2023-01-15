@@ -1,5 +1,6 @@
 package ru.ssnexus.yourhandyplayer.view
 
+import android.bluetooth.BluetoothHeadset
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -22,6 +23,7 @@ import ru.ssnexus.yourhandyplayer.databinding.ActivityMainBinding
 import ru.ssnexus.yourhandyplayer.domain.Interactor
 import ru.ssnexus.yourhandyplayer.mediaplayer.HandyMediaPlayerSingle
 import ru.ssnexus.yourhandyplayer.receivers.ConnectionChecker
+import ru.ssnexus.yourhandyplayer.receivers.HeadsetActionButtonReceiver
 import ru.ssnexus.yourhandyplayer.utils.AutoDisposable
 import ru.ssnexus.yourhandyplayer.view.fragments.DetailsFragment
 import ru.ssnexus.yourhandyplayer.view.fragments.HomeFragment
@@ -39,7 +41,6 @@ class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     private lateinit var receiver: BroadcastReceiver
     private lateinit var tracksLiveData : MutableLiveData<List<JamendoTrackData>>
-    private lateinit var audioManager: AudioManager
 
     private var isHome = false
     private var isExtras = false
@@ -47,7 +48,7 @@ class MainActivity : AppCompatActivity() {
 
     val autoDisposable = AutoDisposable()
 
-    val handyMediaPlayer = HandyMediaPlayerSingle()
+    val handyMediaPlayer = HandyMediaPlayerSingle.instance
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -61,22 +62,24 @@ class MainActivity : AppCompatActivity() {
 
         // Приёмник внешних событий
         receiver = ConnectionChecker()
-        audioManager = getSystemService(Context.AUDIO_SERVICE) as AudioManager
 
         // Фильтр событий
         val filters = IntentFilter().apply {
             addAction(Intent.ACTION_HEADSET_PLUG)
+            addAction(BluetoothHeadset.ACTION_CONNECTION_STATE_CHANGED)
             addAction(Intent.ACTION_POWER_CONNECTED)
             addAction(Intent.ACTION_BATTERY_LOW)
             addAction(Intent.ACTION_BATTERY_OKAY)
         }
+
         // Регистрация приёмника
         registerReceiver(receiver, filters)
 
-//        supportActionBar?.hide()
-        title = ""
-        //Запускаем фрагмент при старте
+        initBTHeadSetReceiver()
 
+        title = ""
+
+        //Запускаем фрагмент при старте
         if(savedInstanceState == null)
         {
             val extras = intent.extras
@@ -92,6 +95,36 @@ class MainActivity : AppCompatActivity() {
         }
 
         initMainActivity()
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        Timber.d("Main:onSaveInstanceState Called")
+    }
+
+    private fun initBTHeadSetReceiver(){
+        HeadsetActionButtonReceiver.delegate = object : HeadsetActionButtonReceiver.Delegate{
+            override fun onMediaButtonSingleClick() {
+                HandyMediaPlayerSingle.instance.onPlay()
+                Timber.d("onMediaButtonSingleClick")
+            }
+
+            override fun onMediaButtonDoubleClick() {
+                Timber.d("onMediaButtonDoubleClick")
+            }
+        }
+        HeadsetActionButtonReceiver.register(this)
+    }
+
+    override fun onResume() {
+        Timber.d("onResume")
+        super.onResume()
+        initBTHeadSetReceiver()
+    }
+
+    override fun onPause() {
+        super.onPause()
+        HeadsetActionButtonReceiver.unregister(this)
     }
 
     fun launchStartFragment(){
@@ -114,6 +147,7 @@ class MainActivity : AppCompatActivity() {
 
         tracksLiveData.observe(this){
             handyMediaPlayer.setTrackList(it)
+            if(!it.isEmpty()) handyMediaPlayer.setTrack(it.first())
         }
 
         when(interactor.getMusicModeFromPreferences()){
@@ -148,7 +182,7 @@ class MainActivity : AppCompatActivity() {
                 .beginTransaction()
                 .replace(R.id.fragment_placeholder, fragment)
                 .addToBackStack(null)
-                .commit()
+                .commitAllowingStateLoss()
         else {
             //Создаем "посылку"
             val bundle = Bundle()
@@ -161,7 +195,7 @@ class MainActivity : AppCompatActivity() {
                 .beginTransaction()
                 .replace(R.id.fragment_placeholder, fragment)
                 .addToBackStack(null)
-                .commit()
+                .commitAllowingStateLoss()
         }
 
     }
@@ -215,8 +249,6 @@ class MainActivity : AppCompatActivity() {
         else
             super.onBackPressed()
     }
-
-    fun isWiredHeadsetOn() = audioManager.isWiredHeadsetOn
 
     fun getHandyMedialayer() = handyMediaPlayer
 

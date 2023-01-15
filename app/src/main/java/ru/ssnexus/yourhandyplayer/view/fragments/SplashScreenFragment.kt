@@ -8,6 +8,7 @@ import androidx.fragment.app.Fragment
 import kotlinx.coroutines.*
 import ru.ssnexus.yourhandyplayer.databinding.FragmentSplashScreenBinding
 import ru.ssnexus.yourhandyplayer.view.MainActivity
+import timber.log.Timber
 import kotlin.coroutines.CoroutineContext
 
 class SplashScreenFragment : Fragment(), CoroutineScope {
@@ -20,6 +21,11 @@ class SplashScreenFragment : Fragment(), CoroutineScope {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        Timber.d("SplashScreenFragment:onSaveInstanceState Called")
     }
 
     override fun onCreateView(

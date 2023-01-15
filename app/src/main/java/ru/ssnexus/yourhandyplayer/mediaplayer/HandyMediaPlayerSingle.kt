@@ -5,13 +5,13 @@ import android.media.MediaPlayer
 import android.view.View
 import androidx.lifecycle.MutableLiveData
 import kotlinx.coroutines.*
+import kotlinx.coroutines.channels.BufferOverflow
+import kotlinx.coroutines.flow.MutableSharedFlow
 import ru.ssnexus.database_module.data.entity.JamendoTrackData
 import ru.ssnexus.yourhandyplayer.domain.Interactor
 import ru.ssnexus.yourhandyplayer.utils.SingleLiveEvent
 import timber.log.Timber
 import java.io.IOException
-import java.util.*
-import java.util.concurrent.Executors
 import javax.inject.Inject
 
 class HandyMediaPlayerSingle () {
@@ -39,8 +39,9 @@ class HandyMediaPlayerSingle () {
     private var wave = arrayListOf<Int>()
 
     var waveLiveData: SingleLiveEvent<Int> = SingleLiveEvent()
+//    val waveDataFlow: MutableSharedFlow<Int> = MutableSharedFlow(replay = 10, onBufferOverflow = BufferOverflow.DROP_OLDEST)
 
-    private var wavePos: Int = 0
+    private var wavePos: Int = -1
 
     init {
         initPlayer()
@@ -57,22 +58,30 @@ class HandyMediaPlayerSingle () {
         }
         scope.launch {
             Timber.d("scope.launch 2")
-            if(!wave.isEmpty()) {
-            val period = mediaPlayer.duration / wave.size
-            if(period > 0)
-                while (true){
-                    delay(period.toLong())
-                    val pos = mediaPlayer.currentPosition / period
-                    if(wavePos != pos && pos !=0){
-                        wavePos = pos
-                        if(wavePos < wave.size){
-                            waveLiveData.postValue( wave[wavePos])
-                        }
+            if(!wave.isEmpty()){
+                val period = mediaPlayer.duration / wave.size
+                if(period > 0) {
+                    while (true) {
+                        delay(period.toLong())
+
+                        waveLiveData.postValue(wave[++wavePos])
+                        Timber.d("waveLiveData.postValue " + wave[wavePos])
                     }
                 }
             }
         }
     }
+
+    fun updateWavePosition() {
+        if(!wave.isEmpty()) {
+            val period = mediaPlayer.duration / wave.size
+            if(period > 0) wavePos = mediaPlayer.currentPosition / period
+        }
+    }
+
+    fun getWaveDataPos() = wavePos
+
+    fun getWaveData() = wave
 
     private fun onStopProgress(){
         scope.cancel()
@@ -99,6 +108,7 @@ class HandyMediaPlayerSingle () {
             currTrack?.let {
                 val waveForm = it.waveform
                 wave = waveForm.split(",").map { it.replace(Regex("[^0-9]"), "").toInt() } as ArrayList<Int>
+                wavePos = -1
             }
             onSetTrackLiveEvent.postValue(true)
             mediaPlayer.let {
@@ -118,8 +128,6 @@ class HandyMediaPlayerSingle () {
             }
         }
     }
-
-
 
     fun getCurrTrackPos() : Int {
         if (isSetTrack()) {
@@ -163,7 +171,7 @@ class HandyMediaPlayerSingle () {
 
     fun isPlaying() = mediaPlayer.isPlaying
 
-    fun togglePlayPause(){
+    private fun togglePlayPause(){
         mediaPlayer.let {
             if(it.isPlaying){
                 playIconState.postValue(false)
@@ -180,7 +188,7 @@ class HandyMediaPlayerSingle () {
         }
     }
 
-    fun initPlayer(){
+    private fun initPlayer(){
         onClickListener = View.OnClickListener {
             togglePlayPause()
         }
@@ -202,7 +210,6 @@ class HandyMediaPlayerSingle () {
                 onNextTrack()
             }
         }
-
     }
 
     fun getCurrTrack() = currTrack
@@ -214,5 +221,9 @@ class HandyMediaPlayerSingle () {
             if(mediaPlayer.isPlaying == true) mediaPlayer.stop()
             mediaPlayer.release()
         }
+    }
+
+    companion object {
+        val instance = HandyMediaPlayerSingle()
     }
 }
