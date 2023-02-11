@@ -40,6 +40,11 @@
     <string name="favorites_cap">FAVORITES</string>
     <string name="listen_later_cap">LISTEN LATER</string>
 
+    <string name="previous">Previous</string>
+    <string name="next">Next</string>
+    <string name="pause">Pause</string>
+    <string name="play">Play</string>
+
 
     <string name="db_name">tracks_db</string>
     <string name="dummy_button">Dummy Button</string>

@@ -1,14 +1,14 @@
 package ru.ssnexus.database_module.data
 
-import androidx.room.ColumnInfo
 import io.reactivex.rxjava3.core.Observable
 import ru.ssnexus.database_module.data.DAO.TrackDao
 import ru.ssnexus.database_module.data.entity.JamendoTrackData
 import ru.ssnexus.yourhandyplayer.di.modules.database_module.data.entity.FavoritesTrackData
 import ru.ssnexus.yourhandyplayer.di.modules.database_module.data.entity.ListenLaterTrackData
-import timber.log.Timber
 
 class MainRepository(private val trackDao: TrackDao) {
+    private var currentItemIndex = 0
+    private var maxItemIndex = 0
 
     fun getTracksDataObservable() : Observable<List<JamendoTrackData>> = trackDao.getCachedTracksObservable()
 //    fun getFavoritesTracksDataObservable() : Observable<List<JamendoTrackData>> = trackDao.getFavoritesTracksObservable()
@@ -22,8 +22,27 @@ class MainRepository(private val trackDao: TrackDao) {
             if (isInCachedListenLater(it.id))
                 it.listen_later_state = 1
         }
-
+        currentItemIndex = 0
+        maxItemIndex = result.size - 1
         trackDao.insertAll(result)
+    }
+
+    fun getCurrent() = trackDao.getCachedTracksObservable().blockingFirst()[currentItemIndex]
+
+    fun getNext(): JamendoTrackData {
+        if (currentItemIndex == maxItemIndex)
+            currentItemIndex = 0
+        else
+            currentItemIndex++
+        return getCurrent()
+    }
+
+    fun getPrevious(): JamendoTrackData{
+        if (currentItemIndex == 0)
+            currentItemIndex = maxItemIndex
+        else
+            currentItemIndex--
+        return getCurrent()
     }
 
     fun getCachedFavoriteTracks(): List<JamendoTrackData> {

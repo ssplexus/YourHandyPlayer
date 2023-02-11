@@ -8,6 +8,7 @@ import ru.ssnexus.yourhandyplayer.di.modules.remote_module.RemoteModule
 import ru.ssnexus.yourhandyplayer.mediaplayer.HandyMediaPlayerSingle
 import ru.ssnexus.yourhandyplayer.receivers.ConnectionChecker
 import ru.ssnexus.yourhandyplayer.receivers.ReminderBroadcast
+import ru.ssnexus.yourhandyplayer.services.PlayerService
 import ru.ssnexus.yourhandyplayer.view.MainActivity
 import ru.ssnexus.yourhandyplayer.viewmodel.*
 import javax.inject.Singleton
@@ -33,5 +34,6 @@ interface AppComponent {
     fun inject(reminder: ReminderBroadcast)
     fun inject(connectionChecker: ConnectionChecker)
     fun inject(handyMediaPlayerSingle: HandyMediaPlayerSingle)
+    fun inject(playerService: PlayerService)
     fun inject(mainActivity: MainActivity)
 }
